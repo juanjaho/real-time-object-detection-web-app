@@ -18,8 +18,8 @@ export default function Home() {
       <main className={styles.main}>
         <h1 className={styles.title} >Real-Time Object Detection</h1>
         <ObjectDetectionCamera width={640} height={480} />      
-        <p className={styles.footer}>
-          Created by <a href="https://juanjaho.github.io/">juanjaho</a>
+        <p className={styles.footer} >
+          Created by <a className="underline underline-offset-1 hover:underline-offset-4" href="https://juanjaho.github.io/" >juanjaho</a>
         </p>
       </main>
     </>

@@ -40,13 +40,14 @@ const WebcamComponent = (props: any) => {
       <div>
         <button
           onClick={capture}
-          className="p-2 mr-3 my-5 border-dashed border-2 rounded-xl "
+          //on hover, shift the button up
+          className="p-2 mr-3 my-5 border-dashed border-2 rounded-xl hover:translate-y-1"
         >
           Capture photo
         </button>
         <button
           onClick={clear}
-          className="p-2 my-5 border-dashed border-2 rounded-xl "
+          className="p-2 my-5 border-dashed border-2 rounded-xl hover:translate-y-1"
         >
           Clear
         </button>
