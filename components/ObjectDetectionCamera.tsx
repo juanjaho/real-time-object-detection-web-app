@@ -15,6 +15,38 @@ const WebcamComponent = (props: any) => {
     }
   };
 
+  //stream video and process it with pytorch model
+  const processVideo = () => {
+    if (webcamRef.current) {
+      const canvas = webcamRef.current.getCanvas();
+      console.log(canvas);
+
+      //draw bounding boxes
+      if (canvas) {
+        const ctx = canvas.getContext("2d");
+
+        
+        if (ctx) {
+          ctx.strokeStyle = "red";
+          ctx.lineWidth = 3;
+          //write text
+          ctx.font = "30px Arial";
+          ctx.fillStyle = "red";
+          ctx.fillText("Hello World", 100, 100);
+
+          ctx.beginPath();
+          ctx.rect(100, 100, 150, 100);
+          ctx.stroke();
+
+          //set the new image source
+          setImgSrc(canvas.toDataURL("image/jpeg"));
+
+        }
+      }
+    }
+    // requestAnimationFrame(processVideo);
+  };
+  // processVideo();
   const clear = () => {
     setImgSrc(null);
   };
@@ -36,18 +68,22 @@ const WebcamComponent = (props: any) => {
         audio={false}
         ref={webcamRef}
         screenshotFormat="image/jpeg"
+        imageSmoothing={true}
       />
       <div>
         <button
-          onClick={capture}
+          onClick={() => {
+            capture();
+            processVideo();
+          }}
           //on hover, shift the button up
-          className="p-2 mr-3 my-5 border-dashed border-2 rounded-xl hover:translate-y-1"
+          className="p-2 mr-3 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
         >
           Capture photo
         </button>
         <button
           onClick={clear}
-          className="p-2 my-5 border-dashed border-2 rounded-xl hover:translate-y-1"
+          className="p-2 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
         >
           Clear
         </button>
