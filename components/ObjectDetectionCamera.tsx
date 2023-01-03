@@ -23,6 +23,15 @@
 import React from "react";
 import Webcam from "react-webcam";
 
-const WebcamComponent = (props: any) => <Webcam />;
+const WebcamComponent = (props: any) =>{
+
+    return (
+        <Webcam />
+    )
+    
+}
+
+
+
 
 export default WebcamComponent;
