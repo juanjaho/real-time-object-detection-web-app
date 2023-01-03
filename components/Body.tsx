@@ -1,6 +1,8 @@
+//create body with webcam and image
+import React, { useRef, useEffect } from "react";
 import Webcam from "react-webcam";
-import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
+import { useState } from "react";
 
 const WebcamComponent = (props: any) => {
   const webcamRef = useRef<Webcam>(null);
@@ -15,10 +17,6 @@ const WebcamComponent = (props: any) => {
     }
   };
 
-  const clear = () => {
-    setImgSrc(null);
-  };
-
   const [SSR, setSSR] = useState<Boolean>(true);
 
   useEffect(() => {
@@ -31,37 +29,16 @@ const WebcamComponent = (props: any) => {
   return (
     <>
       <Webcam
-        // width={props.width}
-        // height={props.height}
-        className="w-max h-max"
+        width={props.width}
+        height={props.height}
         audio={false}
         ref={webcamRef}
         screenshotFormat="image/jpeg"
       />
-      <div>
-        <button
-          onClick={capture}
-          className="p-2 mr-3 my-5 border-dashed border-2 rounded-xl "
-        >
-          Capture photo
-        </button>
-        <button
-          onClick={clear}
-          className="p-2 my-5 border-dashed border-2 rounded-xl "
-        >
-          Clear
-        </button>
-      </div>
+      <button 
+            onClick={capture}
+            className = "p-3"
+            >Capture photo</button>
       {imgSrc && (
         <Image
-          src={imgSrc}
-          alt="Picture taken"
-          width={props.width}
-          height={props.height}
-        />
-      )}
-    </>
-  );
-};
-
-export default WebcamComponent;
+          src

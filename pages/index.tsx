@@ -17,7 +17,7 @@ export default function Home() {
       </Head>
       <main className={styles.main}>
         <h2 className={styles.title} >Real-Time Object Detection</h2>
-        <ObjectDetectionCamera width={640} height={480} />        
+        <ObjectDetectionCamera width={640} height={480} />      
         <p className={styles.footer}>
           Created by <a href="https://juanjaho.github.io/">juanjaho</a>
         </p>
