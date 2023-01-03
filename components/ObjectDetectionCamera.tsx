@@ -31,9 +31,8 @@ const WebcamComponent = (props: any) => {
   return (
     <>
       <Webcam
-        // width={props.width}
-        // height={props.height}
-        className="w-max h-max"
+        width={props.width}
+        height={props.height}
         audio={false}
         ref={webcamRef}
         screenshotFormat="image/jpeg"
