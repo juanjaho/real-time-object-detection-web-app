@@ -2,6 +2,7 @@ import Webcam from "react-webcam";
 import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 
+
 const WebcamComponent = (props: any) => {
   const webcamRef = useRef<Webcam>(null);
   const [imgSrc, setImgSrc] = useState<string | null>(null);
@@ -19,13 +20,12 @@ const WebcamComponent = (props: any) => {
   const processVideo = () => {
     if (webcamRef.current) {
       const canvas = webcamRef.current.getCanvas();
-      console.log(canvas);
-
+      // console.log(canvas);
+      // const res = runModel(canvas);
+      // console.log(res);
       //draw bounding boxes
       if (canvas) {
         const ctx = canvas.getContext("2d");
-
-        
         if (ctx) {
           ctx.strokeStyle = "red";
           ctx.lineWidth = 3;
