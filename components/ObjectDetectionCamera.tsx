@@ -5,11 +5,14 @@ import { Tensor } from "onnxruntime-web";
 
 const WebcamComponent = (props: any) => {
   const [inferenceTime, setInferenceTime] = useState<number>(0);
+  const [totalTime, setTotalTime] = useState<number>(0);
   const webcamRef = useRef<Webcam>(null);
   const videoCanvasRef = useRef<HTMLCanvasElement>(null);
-  const liveStream = useRef<boolean>(false);
+  const liveDetection = useRef<boolean>(false);
   const [session, setSession] = useState<any>(null);
   const [facingMode, setFacingMode] = useState<string>("user");
+
+  const originalSize = useRef<number[]>([0, 0]);
 
   useEffect(() => {
     const getSession = async () => {
@@ -20,81 +23,122 @@ const WebcamComponent = (props: any) => {
     getSession();
   }, [props.modelUri]);
 
-  const capture = () => {
-    const [videoWidth, videoHeight] = [
-      webcamRef.current?.video?.offsetWidth,
-      webcamRef.current?.video?.offsetHeight,
-    ] as number[];
-    console.log(videoWidth, videoHeight);
-    const size = Math.min(videoWidth, videoHeight);
-    const centerHeight = videoHeight / 2;
-    const beginHeight = centerHeight - size / 2;
-    const centerWidth = videoWidth / 2;
-    const beginWidth = centerWidth - size / 2;
+  const resizeCanvasCtx = (
+    ctx: CanvasRenderingContext2D,
+    targetWidth: number,
+    targetHeight: number
+  ) => {
+    const ctxCopy = document
+      .createElement("canvas")
+      .getContext("2d") as CanvasRenderingContext2D;
+    ctxCopy.canvas.width = ctx.canvas.width;
+    ctxCopy.canvas.height = ctx.canvas.height;
+    ctxCopy.drawImage(ctx.canvas, 0, 0);
 
-    console.log(videoWidth, videoHeight);
+    ctx.canvas.width = targetWidth;
+    ctx.canvas.height = targetHeight;
+    ctx.drawImage(ctxCopy.canvas, 0, 0, targetWidth, targetHeight);
+  };
+
+  const capture = () => {
+    // const [videoWidth, videoHeight] = [
+    //   originalSize.current[0],
+    //   originalSize.current[1],
+    // ] as number[];
+
     // placeholder to draw a image
     if (!videoCanvasRef.current) return;
     const canvas = videoCanvasRef.current;
-    canvas.width = Math.min(videoWidth, videoHeight);
-    canvas.height = Math.min(videoWidth, videoHeight);
+    // canvas.width = Math.min(videoWidth, videoHeight);
+    // canvas.height = Math.min(videoWidth, videoHeight);
     const context = canvas.getContext("2d", {
       willReadFrequently: true,
     }) as CanvasRenderingContext2D;
+
     context.drawImage(
       webcamRef.current?.video as HTMLVideoElement,
-      beginWidth,
-      beginHeight,
-      size,
-      size,
+      // beginWidth,
+      // beginHeight,
+      // size,
+      // size,
       0,
       0,
-      canvas.width,
-      canvas.height
+      // canvas.width,
+      // canvas.height
     );
+    console.log(context.canvas.width, context.canvas.height);
     return context;
   };
 
   const runModel = async (ctx: CanvasRenderingContext2D) => {
+    const totalStartTime = performance.now();
+    console.log(ctx.canvas.width, ctx.canvas.height);
     const data = props.preprocess(ctx);
-    console.log(data);
     let outputTensor: Tensor;
     let inferenceTime: number;
     [outputTensor, inferenceTime] = await runModelUtils.runModel(session, data);
     console.log(outputTensor);
     console.log(inferenceTime);
     setInferenceTime(inferenceTime);
-    ctx.clearRect(0, 0, 640, 640);
+    ctx.clearRect(0, 0, originalSize.current[0], originalSize.current[1]);
     props.postprocess(outputTensor, props.inferenceTime, ctx);
+    // resizeCanvasCtx(ctx, originalSize.current[0], originalSize.current[1]);
+    const totalEndTime = performance.now();
+    setTotalTime(totalEndTime - totalStartTime);
   };
 
-  const runLiveSteam = async () => {
-    while (liveStream.current) {
+  const runLiveDetection = async () => {
+    while (liveDetection.current) {
       const ctx = capture();
+      console.log(ctx?.canvas.width, ctx?.canvas.height);
       if (!ctx) return;
       await runModel(ctx);
+      resizeCanvasCtx(ctx, originalSize.current[0], originalSize.current[1]);
       await new Promise<void>((resolve) =>
         requestAnimationFrame(() => resolve())
       );
     }
   };
-  // useEffect(() => {
-  //   runLiveSteam();
-  // }, [liveStream.current]);
 
   const processImage = async () => {
     const ctx = capture();
     if (!ctx) return;
 
     // create a copy of the canvas
-    const copyCtx = document
+    const boxCtx = document
       .createElement("canvas")
       .getContext("2d") as CanvasRenderingContext2D;
-    copyCtx.canvas.width = 640;
-    copyCtx.canvas.height = 640;
-    copyCtx.drawImage(ctx.canvas, 0, 0);
-    await runModel(copyCtx);
-    ctx.drawImage(copyCtx.canvas, 0, 0);
+    boxCtx.canvas.width = ctx.canvas.width;
+    boxCtx.canvas.height = ctx.canvas.height;
+    boxCtx.drawImage(ctx.canvas, 0, 0);
+    await runModel(boxCtx);
+    ctx.drawImage(boxCtx.canvas, 0, 0);
+
+    props.resizeCanvasCtx(ctx, originalSize.current[0], originalSize.current[1]);
+
+    // const imageCtx = document
+    //   .createElement("canvas")
+    //   .getContext("2d") as CanvasRenderingContext2D;
+    // imageCtx.canvas.width = ctx.canvas.width;
+    // imageCtx.canvas.height = ctx.canvas.height;
+    // imageCtx.drawImage(ctx.canvas, 0, 0);
+
+    // ctx.canvas.width = originalSize.current[0];
+    // ctx.canvas.height = originalSize.current[1];
+    // ctx.drawImage(
+    //   imageCtx.canvas,
+    //   0,
+    //   0,
+    //   originalSize.current[0],
+    //   originalSize.current[1]
+    // );
+    // ctx.drawImage(
+    //   boxCtx.canvas,
+    //   0,
+    //   0,
+    //   originalSize.current[0],
+    //   originalSize.current[1]
+    // );
   };
 
   const reset = async () => {
@@ -102,14 +146,14 @@ const WebcamComponent = (props: any) => {
       "2d"
     ) as CanvasRenderingContext2D;
 
-    context.clearRect(0, 0, 640, 640);
-    liveStream.current = false;
-    console.log(liveStream);
+    context.clearRect(0, 0, originalSize.current[0], originalSize.current[1]);
+    liveDetection.current = false;
+    console.log(liveDetection);
   };
 
   const [SSR, setSSR] = useState<Boolean>(true);
 
-  const resize_canvas = () => {
+  const setWebcamCanvasOverlaySize = () => {
     const element = webcamRef.current?.video as HTMLVideoElement;
     console.log(element.offsetHeight, element.offsetWidth);
     if (!element) return;
@@ -125,10 +169,15 @@ const WebcamComponent = (props: any) => {
     setSSR(false);
     if (webcamRef.current && webcamRef.current.video) {
       webcamRef.current.video.onloadedmetadata = () => {
-        resize_canvas();
+        setWebcamCanvasOverlaySize();
+        originalSize.current = [
+          webcamRef.current?.video?.offsetWidth,
+          webcamRef.current?.video?.offsetHeight,
+        ] as number[];
+        // console.log(originalSize.current);
       };
     }
-  },[]);
+  }, [webcamRef.current?.video]);
 
   if (SSR) {
     return <div>Loading...</div>;
@@ -139,13 +188,6 @@ const WebcamComponent = (props: any) => {
       <div
         id="webcam-container"
         className="flex items-center justify-center webcam-container"
-        style={
-          {
-            // position: "relative",
-            // width: props.width,
-            // height: props.height,
-          }
-        }
       >
         <Webcam
           // mirrored={false}
@@ -165,59 +207,70 @@ const WebcamComponent = (props: any) => {
           ref={videoCanvasRef}
           style={{
             position: "absolute",
-            // top: 0,
-            // left: 0,
             zIndex: 10,
             backgroundColor: "rgba(0,0,0,0)",
           }}
         ></canvas>
       </div>
-      {inferenceTime + "ms"}
-      <div className="flex flex-row justify-center">
-        <button
-          onClick={() => {
-            capture();
-            processImage();
-          }}
-          //on hover, shift the button up
-          className="p-2 mr-3 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
-        >
-          Capture photo
-        </button>
-        <button
-          onClick={() => {
-            liveStream.current = true;
-            runLiveSteam();
-          }}
-          //on hover, shift the button up
-          className="p-2 mr-3 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
-        >
-          Start Live Detection
-        </button>
-        <button
-          onClick={() => {
-            setFacingMode(facingMode === "user" ? "environment" : "user");
-          }}
-          //on hover, shift the button up
-          className="p-2 mr-3 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
-        >
-          Switch camera
-        </button>
-        <button
-          onClick={reset}
-          className="p-2 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
-        >
-          Reset
-        </button>
+      <div>
+        <div className="flex justify-between ">
+          <div>
+            {"Model Inference Time: " + inferenceTime + "ms"}
+            <br />
+            {"Total Time: " + totalTime + "ms"}
+            <br />
+            {"Overhead: " + (totalTime - inferenceTime).toFixed(2) + "ms"}
+          </div>
+          <div>
+            <div>
+              {"Model FPS: " + (1000 / inferenceTime).toFixed(2) + "fps"}
+            </div>
+            <div>{"Total FPS: " + (1000 / totalTime).toFixed(2) + "fps"}</div>
+            <div>
+              {"FPS lost to overhead: " +
+                (1000 * (1 / inferenceTime - 1 / totalTime)).toFixed(2) +
+                "fps"}
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-row justify-center">
+          <button
+            onClick={() => {
+              capture();
+              processImage();
+            }}
+            //on hover, shift the button up
+            className="p-2 mr-3 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
+          >
+            Capture Photo
+          </button>
+          <button
+            onClick={() => {
+              liveDetection.current = true;
+              runLiveDetection();
+            }}
+            //on hover, shift the button up
+            className="p-2 mr-3 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
+          >
+            Start Live Detection
+          </button>
+          <button
+            onClick={() => {
+              setFacingMode(facingMode === "user" ? "environment" : "user");
+            }}
+            //on hover, shift the button up
+            className="p-2 mr-3 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
+          >
+            Switch Camera
+          </button>
+          <button
+            onClick={reset}
+            className="p-2 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
+          >
+            Reset
+          </button>
+        </div>
       </div>
-      {/* <canvas ref={canvasRef} width={props.width} height={props.height} /> */}
-      {/* <Canvas
-          ref={canvasRef}
-          width={props.width}
-          height={props.height}
-          imageSrc={imgSrc}
-          processImage={processImage}
-        /> */}
     </>
   );
 };

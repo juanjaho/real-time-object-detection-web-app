@@ -18,8 +18,7 @@ export default function Home() {
       </Head>
       <main className={styles.main}>
         <h1 className={styles.title} >Real-Time Object Detection</h1>
-        {/* <ObjectDetectionCamera width={640} height={480} />       */}
-        <Yolo width={640} height={640}/>
+        <Yolo width={1040} height={640}/>
         <p className={styles.footer} >
           Created by <a className="underline underline-offset-1 hover:translate-y-1" href="https://juanjaho.github.io/" >@juanjaho</a>
         </p>

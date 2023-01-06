@@ -1,15 +1,38 @@
 import ndarray from "ndarray";
 import { Tensor } from "onnxruntime-web";
 import ops from "ndarray-ops";
-import { runModelUtils} from "../../utils/index";
 import ObjectDetectionCamera from "../ObjectDetectionCamera";
 import { round } from "lodash";
 import { yoloClasses } from "../../data/yolo_classes";
-import { RefObject } from "react";
-import Webcam from "react-webcam";
+
+const INPUT_DIM_WIDTH = 640;
+const INPUT_DIM_HEIGHT = 640;
 
 const Yolo = (props: any) => {
+  const resizeCanvasCtx = (
+    ctx: CanvasRenderingContext2D,
+    targetWidth: number,
+    targetHeight: number
+  ) => {
+    const ctxCopy = document
+      .createElement("canvas")
+      .getContext("2d") as CanvasRenderingContext2D;
+    ctxCopy.canvas.width = ctx.canvas.width;
+    ctxCopy.canvas.height = ctx.canvas.height;
+    ctxCopy.drawImage(ctx.canvas, 0, 0);
+
+    ctx.canvas.width = targetWidth;
+    ctx.canvas.height = targetHeight;
+    ctx.drawImage(ctxCopy.canvas, 0, 0, targetWidth, targetHeight);
+  };
+
   const preprocess = (ctx: CanvasRenderingContext2D) => {
+
+    //if ctx size is different from original size, resize using transform
+    console.log(ctx.canvas.width, ctx.canvas.height);
+
+    resizeCanvasCtx(ctx, INPUT_DIM_WIDTH, INPUT_DIM_HEIGHT);
+
     const imageData = ctx.getImageData(
       0,
       0,
@@ -97,6 +120,8 @@ const Yolo = (props: any) => {
 			ctx.fillStyle = color.replace(")", ", 0.2)").replace("rgb", "rgba");
 			ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
 
+      
+
 
     }
   };
@@ -110,6 +135,7 @@ const Yolo = (props: any) => {
       height={props.height}
       preprocess={preprocess}
       postprocess={postprocess}
+      resizeCanvasCtx={resizeCanvasCtx}
       modelUri={"./_next/static/chunks/pages/yolov7-tiny.onnx"}
       modelFilePath={"./_next/static/chunks/pages/yolov7-tiny.onnx"}
     />
