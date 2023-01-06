@@ -1,7 +1,7 @@
 import ndarray from "ndarray";
 import { Tensor } from "onnxruntime-web";
 import ops from "ndarray-ops";
-import { runModelUtils, yolo, yoloTransforms } from "../../utils/index";
+import { runModelUtils, yolo,  } from "../../utils/index";
 import ObjectDetectionCamera from "../ObjectDetectionCamera";
 import { round } from "lodash";
 import { imageHelper } from "../../utils/index";
