@@ -90,7 +90,7 @@ const WebcamComponent = (props: any) => {
         />
        
       </div>
-      <div>
+      <div className="flex flex-row">
         <button
           onClick={() => {
             capture();
@@ -115,6 +115,7 @@ const WebcamComponent = (props: any) => {
         >
           Clear
         </button>
+      </div>
         <Canvas
           ref={canvasRef}
           width={props.width}
@@ -122,7 +123,6 @@ const WebcamComponent = (props: any) => {
           imageSrc={imgSrc}
           processImage={processImage}
         />
-      </div>
     </>
   );
 };

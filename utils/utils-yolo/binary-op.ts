@@ -1,8 +1,8 @@
-import ndarray from 'ndarray';
-import {Tensor} from 'onnxruntime-web';
+// import ndarray from 'ndarray';
+// import {Tensor} from 'onnxruntime-web';
 
-import {NumberDataType, NumberOrBoolType} from './yoloPostprocess';
-import {BroadcastUtil} from './yoloPostprocessUtils';
+// import {NumberDataType, NumberOrBoolType} from './yoloPostprocess';
+// import {BroadcastUtil} from './yoloPostprocessUtils';
 
 // export function binaryOp(
 //     x: Tensor, y: Tensor, opLambda: (e1: number, e2: number) => number, resultType?: NumberOrBoolType): Tensor {
