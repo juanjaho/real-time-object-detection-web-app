@@ -4,6 +4,12 @@ function init() {
   // env.wasm.simd = false;
 }
 
+export async function createModelCpuFromUrl(url: string): Promise<InferenceSession> {
+  init();
+  
+  return await InferenceSession.create(url, {executionProviders: ['wasm'],  graphOptimizationLevel: 'all' });
+}
+
 export async function createModelCpu(model: ArrayBuffer): Promise<InferenceSession> {
   init();
   return await InferenceSession.create(model, {executionProviders: ['wasm']});
@@ -35,6 +41,7 @@ export async function runModel(model: InferenceSession, preprocessedData: Tensor
   try {
     const feeds: Record<string, Tensor> = {};
     feeds[model.inputNames[0]] = preprocessedData;
+    console.log(feeds)
     const outputData = await model.run(feeds);
     const end = new Date();
     const inferenceTime = (end.getTime() - start.getTime());

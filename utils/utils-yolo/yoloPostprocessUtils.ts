@@ -459,3 +459,23 @@ export class TypedArrayUtil {
     }
   }
 }
+
+// const letterbox = (image: ImageData, newWidth: number, newHeight: number): ImageData => {
+//   const { width, height } = image;
+//   const scale = Math.min(newWidth / width, newHeight / height);
+//   const w = width * scale;
+//   const h = height * scale;
+//   const x = (newWidth - w) / 2;
+//   const y = (newHeight - h) / 2;
+//   const canvas = document.createElement('canvas');
+//   canvas.width = newWidth;
+//   canvas.height = newHeight;
+//   const ctx = canvas.getContext('2d');
+//   if (ctx) {
+//     ctx.fillStyle = 'black';
+//     ctx.fillRect(0, 0, newWidth, newHeight);
+//     ctx.drawImage(image, x, y, w, h);
+//     return ctx.getImageData(0, 0, newWidth, newHeight);
+//   }
+//   throw new Error('Failed to get canvas context');
+// }

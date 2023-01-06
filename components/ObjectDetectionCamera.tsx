@@ -1,54 +1,71 @@
 import Webcam from "react-webcam";
 import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
-
+import { imageHelper, predict, runModelUtils } from "../utils";
+import { Tensor } from "onnxruntime-web";
+import Canvas from "./Canvas";
 
 const WebcamComponent = (props: any) => {
+  let inferenceTime = 0;
   const webcamRef = useRef<Webcam>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [imgSrc, setImgSrc] = useState<string | null>(null);
+  const [liveStream, setLiveStream] = useState<boolean>(false);
+  const [session, setSession] = useState<any>(null);
+
+  useEffect(() => {
+    if (liveStream) {
+      const interval = setInterval(() => {
+        capture();
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [liveStream]);
+
+  //get session from  /models/Yolov7-tiny.onnx
+  useEffect(() => {
+    const getSession = async () => {
+      console.log(props.modelUri);
+      const session = await runModelUtils.createModelCpuFromUrl(props.modelUri);
+      setSession(session);
+    };
+    getSession();
+  }, [props.modelUri]);
 
   const capture = () => {
     if (webcamRef.current) {
       const imageSrc = webcamRef.current.getScreenshot();
+      // const imageSrc = "/car.jpg";
       setImgSrc(imageSrc);
     } else {
       console.log("webcamRef.current is null");
     }
   };
 
-  //stream video and process it with pytorch model
-  const processVideo = () => {
-    if (webcamRef.current) {
-      const canvas = webcamRef.current.getCanvas();
-      // console.log(canvas);
-      // const res = runModel(canvas);
-      // console.log(res);
-      //draw bounding boxes
-      if (canvas) {
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.strokeStyle = "red";
-          ctx.lineWidth = 3;
-          //write text
-          ctx.font = "30px Arial";
-          ctx.fillStyle = "red";
-          ctx.fillText("Hello World", 100, 100);
+  const runModel = async (ctx: CanvasRenderingContext2D) => {
+    const data = props.preprocess(ctx);
+    console.log(data);
+    let outputTensor: Tensor;
+    [outputTensor, inferenceTime] = await runModelUtils.runModel(session, data);
+    console.log(outputTensor);
+    console.log(inferenceTime);
 
-          ctx.beginPath();
-          ctx.rect(100, 100, 150, 100);
-          ctx.stroke();
-
-          //set the new image source
-          setImgSrc(canvas.toDataURL("image/jpeg"));
-
-        }
-      }
-    }
-    // requestAnimationFrame(processVideo);
+    props.postprocess(outputTensor, props.inferenceTime, ctx);
   };
-  // processVideo();
+
+  const processImage = async () => {
+    if (canvasRef) {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      runModel(ctx);
+    }
+  };
+
   const clear = () => {
     setImgSrc(null);
+    setLiveStream(false);
   };
 
   const [SSR, setSSR] = useState<Boolean>(true);
@@ -62,19 +79,21 @@ const WebcamComponent = (props: any) => {
   }
   return (
     <>
-      <Webcam
-        width={props.width}
-        height={props.height}
-        audio={false}
-        ref={webcamRef}
-        screenshotFormat="image/jpeg"
-        imageSmoothing={true}
-      />
+      <div className="flex items-center justify-center">
+        <Webcam
+          width={props.width}
+          height={props.height}
+          audio={false}
+          ref={webcamRef}
+          screenshotFormat="image/jpeg"
+          imageSmoothing={true}
+        />
+       
+      </div>
       <div>
         <button
           onClick={() => {
             capture();
-            processVideo();
           }}
           //on hover, shift the button up
           className="p-2 mr-3 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
@@ -82,20 +101,28 @@ const WebcamComponent = (props: any) => {
           Capture photo
         </button>
         <button
+          onClick={() => {
+            setLiveStream(!liveStream);
+          }}
+          //on hover, shift the button up
+          className="p-2 mr-3 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
+        >
+          Start Live Detection
+        </button>
+        <button
           onClick={clear}
           className="p-2 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
         >
           Clear
         </button>
-      </div>
-      {imgSrc && (
-        <Image
-          src={imgSrc}
-          alt="Picture taken"
+        <Canvas
+          ref={canvasRef}
           width={props.width}
           height={props.height}
+          imageSrc={imgSrc}
+          processImage={processImage}
         />
-      )}
+      </div>
     </>
   );
 };

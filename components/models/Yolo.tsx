@@ -2,11 +2,13 @@ import ndarray from "ndarray";
 import { Tensor } from "onnxruntime-web";
 import ops from "ndarray-ops";
 import { runModelUtils, yolo, yoloTransforms } from "../../utils/index";
+import ObjectDetectionCamera from "../ObjectDetectionCamera";
+import { round } from "lodash";
+import { imageHelper } from "../../utils/index";
+import { yoloClasses } from "../../data/yolo_classes";
 
-
-
-const Yolo = () => {
-  const preprocess = (ctx: CanvasRenderingContext2D): Tensor => {
+const Yolo = (props: any) => {
+  const preprocess = (ctx: CanvasRenderingContext2D) => {
     const imageData = ctx.getImageData(
       0,
       0,
@@ -36,71 +38,68 @@ const Yolo = () => {
       dataTensor.pick(null, null, 2)
     );
 
+    ops.divseq(dataProcessedTensor, 255);
+
     const tensor = new Tensor("float32", new Float32Array(width * height * 3), [
       1,
       3,
       width,
       height,
     ]);
+
     (tensor.data as Float32Array).set(dataProcessedTensor.data);
     return tensor;
   };
 
-  const postprocess = async (tensor: Tensor, inferenceTime: number) => {
-    try {
-      const originalOutput = new Tensor(
-        "float32",
-        tensor.data as Float32Array,
-        [1, 125, 13, 13]
+  const postprocess = async (
+    tensor: Tensor,
+    inferenceTime: number,
+    ctx: CanvasRenderingContext2D
+  ) => {
+    for (let i = 0; i < tensor.dims[0]; i++) {
+      // const [batch_id, x0, y0, x1, y1, cls_id, score] = tensor.data.slice( will return a number[] type
+      let [batch_id, x0, y0, x1, y1, cls_id, score] = tensor.data.slice(
+        i * 7,
+        i * 7 + 7
       );
-      const outputTensor = yoloTransforms.transpose(
-        originalOutput,
-        [0, 2, 3, 1]
-      );
+      
+      [batch_id, x0, y0, x1, y1, cls_id] = [
+        batch_id,
+        x0,
+        y0,
+        x1,
+        y1,
+        cls_id,
+      ].map((x: any) => round(x));
+      const box = [x0, y0, x1, y1].map((x: any) => round(x));
 
-      // postprocessing
-      const boxes = await yolo.postprocess(outputTensor, 20);
-      boxes.forEach((box) => {
-        const { top, left, bottom, right, classProb, className } = box;
+      [score] = [score].map((x: any) => round(x, 3));
+      const label = yoloClasses[cls_id].toString() + " " + score.toString();
+      const color = [255, 125, 125];
 
-        drawRect(
-          left,
-          top,
-          right - left,
-          bottom - top,
-          `${className} Confidence: ${Math.round(
-            classProb * 100
-          )}% Time: ${inferenceTime.toFixed(1)}ms`
-        );
-      });
-    } catch (e) {
-      alert("Model is not valid!");
+      ctx.strokeStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+			ctx.font = "20px Arial";
+			ctx.fillStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+			ctx.fillText(label, x0, y0-5);
+
+			// fillrect with transparent color
+			ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.2)`;
+			ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+
+
     }
   };
-  const drawRect = (
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-    text = "",
-    color = "red"
-  ) => {
-    const webcamContainerElement = document.getElementById(
-      "webcam-container"
-    ) as HTMLElement;
-    // Depending on the display size, webcamContainerElement might be smaller than 416x416.
-    const [ox, oy] = [
-      (webcamContainerElement.offsetWidth - 416) / 2,
-      (webcamContainerElement.offsetHeight - 416) / 2,
-    ];
-    const rect = document.createElement("div");
-    rect.style.cssText = `top: ${y + oy}px; left: ${
-      x + ox
-    }px; width: ${w}px; height: ${h}px; border-color: ${color};`;
-    const label = document.createElement("div");
-    label.innerText = text;
-    rect.appendChild(label);
-
-    webcamContainerElement.appendChild(rect);
-  };
+  return (
+    <ObjectDetectionCamera
+      width={props.width}
+      height={props.height}
+      preprocess={preprocess}
+      postprocess={postprocess}
+      modelUri={"./_next/static/chunks/pages/yolov7-tiny.onnx"}
+    />
+  );
 };
+
+export default Yolo;
