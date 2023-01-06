@@ -12,7 +12,7 @@ const WebcamComponent = (props: any) => {
   const [imgSrc, setImgSrc] = useState<string | null>(null);
   const [liveStream, setLiveStream] = useState<boolean>(false);
   const [session, setSession] = useState<any>(null);
-  const [camera, setCamera] = useState<string>('user');
+  const [facingMode, setFacingMode] = useState<string>('user');
 
   useEffect(() => {
     if (liveStream) {
@@ -89,7 +89,7 @@ const WebcamComponent = (props: any) => {
           screenshotFormat="image/jpeg"
           imageSmoothing={true}
           videoConstraints={{
-            facingMode: "user",
+            facingMode: facingMode,
           }}
         />
        
@@ -115,7 +115,7 @@ const WebcamComponent = (props: any) => {
         </button>
         <button
           onClick={() => {
-            setCamera(camera === 'user' ? 'environment' : 'user');
+            setFacingMode(facingMode === 'user' ? 'environment' : 'user');
           }}
           //on hover, shift the button up
           className="p-2 mr-3 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
