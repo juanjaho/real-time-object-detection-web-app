@@ -4,9 +4,8 @@ import { runModelUtils } from "../utils";
 import { Tensor } from "onnxruntime-web";
 
 const WebcamComponent = (props: any) => {
-  let inferenceTime = 0;
+  const [inferenceTime, setInferenceTime] = useState<number>(0);
   const webcamRef = useRef<Webcam>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoCanvasRef = useRef<HTMLCanvasElement>(null);
   const liveStream = useRef<boolean>(false);
   const [session, setSession] = useState<any>(null);
@@ -15,7 +14,7 @@ const WebcamComponent = (props: any) => {
   useEffect(() => {
     const getSession = async () => {
       console.log(props.modelUri);
-      const session = await runModelUtils.createModelCpuFromUrl(props.modelUri);
+      const session = await runModelUtils.createModelCpu(props.modelUri);
       setSession(session);
     };
     getSession();
@@ -60,9 +59,11 @@ const WebcamComponent = (props: any) => {
     const data = props.preprocess(ctx);
     console.log(data);
     let outputTensor: Tensor;
+    let inferenceTime: number;
     [outputTensor, inferenceTime] = await runModelUtils.runModel(session, data);
     console.log(outputTensor);
     console.log(inferenceTime);
+    setInferenceTime(inferenceTime);
     ctx.clearRect(0, 0, 640, 640);
     props.postprocess(outputTensor, props.inferenceTime, ctx);
   };
@@ -77,9 +78,9 @@ const WebcamComponent = (props: any) => {
       );
     }
   };
-  useEffect(() => {
-    runLiveSteam();
-  }, [liveStream.current]);
+  // useEffect(() => {
+  //   runLiveSteam();
+  // }, [liveStream.current]);
 
   const processImage = async () => {
     const ctx = capture();
@@ -120,10 +121,6 @@ const WebcamComponent = (props: any) => {
     cv.height = h;
   };
 
-  // useLayoutEffect(() => {
-  //   resize_canvas();
-  // }, [webcamRef.current?.video]);
-
   useEffect(() => {
     setSSR(false);
     if (webcamRef.current && webcamRef.current.video) {
@@ -131,7 +128,7 @@ const WebcamComponent = (props: any) => {
         resize_canvas();
       };
     }
-  });
+  },[]);
 
   if (SSR) {
     return <div>Loading...</div>;
@@ -175,6 +172,7 @@ const WebcamComponent = (props: any) => {
           }}
         ></canvas>
       </div>
+      {inferenceTime + "ms"}
       <div className="flex flex-row justify-center">
         <button
           onClick={() => {

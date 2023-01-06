@@ -53,6 +53,11 @@ const Yolo = (props: any) => {
   };
 
   
+  const conf2color = (conf: number) => {
+    const r = Math.round(255 * (1 - conf));
+    const g = Math.round(255 * conf);
+    return `rgb(${r},${g},0)`;
+  };
 
   const postprocess = async (
     tensor: Tensor,
@@ -75,20 +80,21 @@ const Yolo = (props: any) => {
         cls_id,
       ].map((x: any) => round(x));
       const box = [x0, y0, x1, y1].map((x: any) => round(x));
-
+      
       [score] = [score].map((x: any) => round(x*100, 1));
       const label = yoloClasses[cls_id].toString()[0].toUpperCase() + yoloClasses[cls_id].toString().substring(1) + " " + score.toString()+"%";
-      const color = [255, 125, 125];
-
-      ctx.strokeStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+      const color = conf2color(score/100);
+      // const color = [255, 125, 125];
+      
+      ctx.strokeStyle = color
       ctx.lineWidth = 3;
       ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
 			ctx.font = "20px Arial";
-			ctx.fillStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+			ctx.fillStyle = color;
 			ctx.fillText(label, x0, y0-5);
 
 			// fillrect with transparent color
-			ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.2)`;
+			ctx.fillStyle = color.replace(")", ", 0.2)").replace("rgb", "rgba");
 			ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
 
 
