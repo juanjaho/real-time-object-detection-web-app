@@ -4,7 +4,6 @@ import ops from "ndarray-ops";
 import { runModelUtils} from "../../utils/index";
 import ObjectDetectionCamera from "../ObjectDetectionCamera";
 import { round } from "lodash";
-import { imageHelper } from "../../utils/index";
 import { yoloClasses } from "../../data/yolo_classes";
 import { RefObject } from "react";
 import Webcam from "react-webcam";
@@ -53,31 +52,7 @@ const Yolo = (props: any) => {
     return tensor;
   };
 
-  const drawRect = (
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-    text = "",
-    color = "red",
-    webcamRef: RefObject<Webcam>
-  ) => {
-
-    const webcamContainerElement =  document.getElementById("webcam-container") as HTMLElement;
-    // Depending on the display size, webcamContainerElement might be smaller than 416x416.
-    const [ox, oy] = [(webcamContainerElement.offsetWidth - 416) / 2, (webcamContainerElement.offsetHeight - 416) / 2];
-    const rect = document.createElement("div");
-    rect.style.cssText = `top: ${y+oy}px; left: ${x+ox}px; width: ${w}px; height: ${h}px; border-color: ${color};`;
-    const label = document.createElement("div");
-    label.innerText = text;
-    rect.appendChild(label);
-
-    webcamContainerElement.appendChild(
-      rect
-    );
-
-
-  }
+  
 
   const postprocess = async (
     tensor: Tensor,
@@ -115,6 +90,7 @@ const Yolo = (props: any) => {
 			// fillrect with transparent color
 			ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.2)`;
 			ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+
 
     }
   };

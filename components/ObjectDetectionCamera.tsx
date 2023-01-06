@@ -8,27 +8,25 @@ const WebcamComponent = (props: any) => {
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoCanvasRef = useRef<HTMLCanvasElement>(null);
-  const liveStream= useRef<boolean>(false);
+  const liveStream = useRef<boolean>(false);
   const [session, setSession] = useState<any>(null);
   const [facingMode, setFacingMode] = useState<string>("user");
-  const [videoWidth, setVideoWidth] = useState<number>(0);
-  const [videoHeight, setVideoHeight] = useState<number>(0);
-  const [sessionRunning, setSessionRunning] = useState<boolean>(false);
 
   useEffect(() => {
     const getSession = async () => {
       console.log(props.modelUri);
       const session = await runModelUtils.createModelCpuFromUrl(props.modelUri);
       setSession(session);
-      if (webcamRef.current && webcamRef.current.video) {
-        setVideoWidth(webcamRef.current.video.videoWidth);
-        setVideoHeight(webcamRef.current.video.videoHeight);
-      }
     };
     getSession();
   }, [props.modelUri]);
 
   const capture = () => {
+    const [videoWidth, videoHeight] = [
+      webcamRef.current?.video?.offsetWidth,
+      webcamRef.current?.video?.offsetHeight,
+    ] as number[];
+    console.log(videoWidth, videoHeight);
     const size = Math.min(videoWidth, videoHeight);
     const centerHeight = videoHeight / 2;
     const beginHeight = centerHeight - size / 2;
@@ -41,7 +39,9 @@ const WebcamComponent = (props: any) => {
     const canvas = videoCanvasRef.current;
     canvas.width = Math.min(videoWidth, videoHeight);
     canvas.height = Math.min(videoWidth, videoHeight);
-    const context = canvas.getContext("2d",{ willReadFrequently: true }) as CanvasRenderingContext2D;
+    const context = canvas.getContext("2d", {
+      willReadFrequently: true,
+    }) as CanvasRenderingContext2D;
     context.drawImage(
       webcamRef.current?.video as HTMLVideoElement,
       beginWidth,
@@ -63,15 +63,11 @@ const WebcamComponent = (props: any) => {
     [outputTensor, inferenceTime] = await runModelUtils.runModel(session, data);
     console.log(outputTensor);
     console.log(inferenceTime);
-    const videoCanvasCtx = videoCanvasRef.current?.getContext(
-      "2d"
-    ) as CanvasRenderingContext2D;
-    videoCanvasCtx.clearRect(0, 0, 640, 640);
-    props.postprocess(outputTensor, props.inferenceTime, videoCanvasCtx);
+    ctx.clearRect(0, 0, 640, 640);
+    props.postprocess(outputTensor, props.inferenceTime, ctx);
   };
-  
+
   const runLiveSteam = async () => {
-    
     while (liveStream.current) {
       const ctx = capture();
       if (!ctx) return;
@@ -83,18 +79,21 @@ const WebcamComponent = (props: any) => {
   };
   useEffect(() => {
     runLiveSteam();
-
   }, [liveStream.current]);
 
-
-
-
   const processImage = async () => {
- 
     const ctx = capture();
     if (!ctx) return;
-    runModel(ctx);
-    
+
+    // create a copy of the canvas
+    const copyCtx = document
+      .createElement("canvas")
+      .getContext("2d") as CanvasRenderingContext2D;
+    copyCtx.canvas.width = 640;
+    copyCtx.canvas.height = 640;
+    copyCtx.drawImage(ctx.canvas, 0, 0);
+    await runModel(copyCtx);
+    ctx.drawImage(copyCtx.canvas, 0, 0);
   };
 
   const reset = async () => {
@@ -110,10 +109,8 @@ const WebcamComponent = (props: any) => {
   const [SSR, setSSR] = useState<Boolean>(true);
 
   const resize_canvas = () => {
-    console.log("passsed");
-    console.log(webcamRef.current?.video);
     const element = webcamRef.current?.video as HTMLVideoElement;
-    console.log(element);
+    console.log(element.offsetHeight, element.offsetWidth);
     if (!element) return;
     var w = element.offsetWidth;
     var h = element.offsetHeight;
@@ -129,11 +126,14 @@ const WebcamComponent = (props: any) => {
 
   useEffect(() => {
     setSSR(false);
-    // resize_canvas();
-  }, []);
+    if (webcamRef.current && webcamRef.current.video) {
+      webcamRef.current.video.onloadedmetadata = () => {
+        resize_canvas();
+      };
+    }
+  });
 
   if (SSR) {
-    
     return <div>Loading...</div>;
   }
   // resize_canvas();
@@ -142,19 +142,18 @@ const WebcamComponent = (props: any) => {
       <div
         id="webcam-container"
         className="flex items-center justify-center webcam-container"
-        style={{
-          // position: "relative",
-          width: props.width,
-          height: props.height,
-        }}
+        style={
+          {
+            // position: "relative",
+            // width: props.width,
+            // height: props.height,
+          }
+        }
       >
         <Webcam
+          // mirrored={false}
           audio={false}
           ref={webcamRef}
-          // onLoadStart={() => {
-          //   resize_canvas();
-          //   console.log("loaded");
-          // }}
           screenshotFormat="image/jpeg"
           imageSmoothing={true}
           videoConstraints={{
@@ -189,9 +188,8 @@ const WebcamComponent = (props: any) => {
         </button>
         <button
           onClick={() => {
-            liveStream.current = true
+            liveStream.current = true;
             runLiveSteam();
-
           }}
           //on hover, shift the button up
           className="p-2 mr-3 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
