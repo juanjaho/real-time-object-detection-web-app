@@ -17,12 +17,10 @@ export async function runModel(
   try {
     const feeds: Record<string, Tensor> = {};
     feeds[model.inputNames[0]] = preprocessedData;
-    console.log(feeds);
     const outputData = await model.run(feeds);
     const end = new Date();
     const inferenceTime = end.getTime() - start.getTime();
     const output = outputData[model.outputNames[0]];
-
     return [output, inferenceTime];
   } catch (e) {
     console.error(e);

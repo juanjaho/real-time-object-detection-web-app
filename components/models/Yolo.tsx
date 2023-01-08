@@ -14,31 +14,18 @@ const Yolo = (props: any) => {
     targetWidth: number,
     targetHeight: number
   ) => {
-    const ctxCopy = document
-      .createElement("canvas")
-      .getContext("2d") as CanvasRenderingContext2D;
-    ctxCopy.canvas.width = ctx.canvas.width;
-    ctxCopy.canvas.height = ctx.canvas.height;
-    ctxCopy.drawImage(ctx.canvas, 0, 0);
-
     ctx.canvas.width = targetWidth;
     ctx.canvas.height = targetHeight;
-    ctx.drawImage(ctxCopy.canvas, 0, 0, targetWidth, targetHeight);
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(ctx.canvas, 0, 0, targetWidth, targetHeight);
   };
 
   const preprocess = (ctx: CanvasRenderingContext2D) => {
+    // resizeCanvasCtx(ctx, INPUT_DIM_WIDTH, INPUT_DIM_HEIGHT);
 
-    //if ctx size is different from original size, resize using transform
-    console.log(ctx.canvas.width, ctx.canvas.height);
-
-    resizeCanvasCtx(ctx, INPUT_DIM_WIDTH, INPUT_DIM_HEIGHT);
-
-    const imageData = ctx.getImageData(
-      0,
-      0,
-      ctx.canvas.width,
-      ctx.canvas.height
-    );
+    const imageData = ctx.getImageData(0, 0, INPUT_DIM_HEIGHT, INPUT_DIM_WIDTH);
     const { data, width, height } = imageData;
     // data processing
     const dataTensor = ndarray(new Float32Array(data), [width, height, 4]);
@@ -75,7 +62,6 @@ const Yolo = (props: any) => {
     return tensor;
   };
 
-  
   const conf2color = (conf: number) => {
     const r = Math.round(255 * (1 - conf));
     const g = Math.round(255 * conf);
@@ -85,15 +71,18 @@ const Yolo = (props: any) => {
   const postprocess = async (
     tensor: Tensor,
     inferenceTime: number,
-    ctx: CanvasRenderingContext2D,
+    ctx: CanvasRenderingContext2D
   ) => {
     for (let i = 0; i < tensor.dims[0]; i++) {
       // const [batch_id, x0, y0, x1, y1, cls_id, score] = tensor.data.slice( will return a number[] type
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      // resizeCanvasCtx(ctx, INPUT_DIM_WIDTH, INPUT_DIM_HEIGHT);
+
       let [batch_id, x0, y0, x1, y1, cls_id, score] = tensor.data.slice(
         i * 7,
         i * 7 + 7
       );
-      
+
       [batch_id, x0, y0, x1, y1, cls_id] = [
         batch_id,
         x0,
@@ -103,31 +92,29 @@ const Yolo = (props: any) => {
         cls_id,
       ].map((x: any) => round(x));
       const box = [x0, y0, x1, y1].map((x: any) => round(x));
-      
-      [score] = [score].map((x: any) => round(x*100, 1));
-      const label = yoloClasses[cls_id].toString()[0].toUpperCase() + yoloClasses[cls_id].toString().substring(1) + " " + score.toString()+"%";
-      const color = conf2color(score/100);
+
+      [score] = [score].map((x: any) => round(x * 100, 1));
+      const label =
+        yoloClasses[cls_id].toString()[0].toUpperCase() +
+        yoloClasses[cls_id].toString().substring(1) +
+        " " +
+        score.toString() +
+        "%";
+      const color = conf2color(score / 100);
       // const color = [255, 125, 125];
-      
-      ctx.strokeStyle = color
+
+      ctx.strokeStyle = color;
       ctx.lineWidth = 3;
       ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
-			ctx.font = "20px Arial";
-			ctx.fillStyle = color;
-			ctx.fillText(label, x0, y0-5);
+      ctx.font = "20px Arial";
+      ctx.fillStyle = color;
+      ctx.fillText(label, x0, y0 - 5);
 
-			// fillrect with transparent color
-			ctx.fillStyle = color.replace(")", ", 0.2)").replace("rgb", "rgba");
-			ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
-
-      
-
-
+      // fillrect with transparent color
+      ctx.fillStyle = color.replace(")", ", 0.2)").replace("rgb", "rgba");
+      ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
     }
   };
-
-  
-    
 
   return (
     <ObjectDetectionCamera

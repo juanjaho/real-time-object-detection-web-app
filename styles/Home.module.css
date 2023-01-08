@@ -1,9 +1,9 @@
 .main {
-  display: flex;
+  /* display: flex; */
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  padding: 3rem;
+  padding: 2rem;
   min-height: 100vh;
   font-family: var(--font-mono);
 }

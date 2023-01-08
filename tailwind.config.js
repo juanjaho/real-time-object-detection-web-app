@@ -5,10 +5,28 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        'sans': [
+          "ui - monospace",
+          "Menlo",
+          "Monaco",
+          "Cascadia Mono",
+          "Segoe UI Mono",
+          "Roboto Mono",
+          "Oxygen Mono",
+          "Ubuntu Monospace",
+          "Source Code Pro",
+          "Fira Mono",
+          "Droid Sans Mono",
+          "Courier New",
+          "monospace",
+        ],
+      },
+    },
+    plugins: [],
+    future: {
+      hoverOnlyWhenSupported: true,
+    },
   },
-  plugins: [],
-  future: {
-    hoverOnlyWhenSupported: true,
-  },
-}
+};

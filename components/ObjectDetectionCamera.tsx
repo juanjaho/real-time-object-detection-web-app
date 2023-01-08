@@ -23,77 +23,52 @@ const WebcamComponent = (props: any) => {
     getSession();
   }, [props.modelUri]);
 
-  const resizeCanvasCtx = (
-    ctx: CanvasRenderingContext2D,
-    targetWidth: number,
-    targetHeight: number
-  ) => {
-    const ctxCopy = document
-      .createElement("canvas")
-      .getContext("2d") as CanvasRenderingContext2D;
-    ctxCopy.canvas.width = ctx.canvas.width;
-    ctxCopy.canvas.height = ctx.canvas.height;
-    ctxCopy.drawImage(ctx.canvas, 0, 0);
-
-    ctx.canvas.width = targetWidth;
-    ctx.canvas.height = targetHeight;
-    ctx.drawImage(ctxCopy.canvas, 0, 0, targetWidth, targetHeight);
-  };
-
   const capture = () => {
-    // const [videoWidth, videoHeight] = [
-    //   originalSize.current[0],
-    //   originalSize.current[1],
-    // ] as number[];
-
-    // placeholder to draw a image
     if (!videoCanvasRef.current) return;
     const canvas = videoCanvasRef.current;
-    // canvas.width = Math.min(videoWidth, videoHeight);
-    // canvas.height = Math.min(videoWidth, videoHeight);
     const context = canvas.getContext("2d", {
       willReadFrequently: true,
     }) as CanvasRenderingContext2D;
 
     context.drawImage(
       webcamRef.current?.video as HTMLVideoElement,
-      // beginWidth,
-      // beginHeight,
-      // size,
-      // size,
       0,
       0,
-      // canvas.width,
-      // canvas.height
+      canvas.width,
+      canvas.height
     );
-    console.log(context.canvas.width, context.canvas.height);
     return context;
   };
 
   const runModel = async (ctx: CanvasRenderingContext2D) => {
     const totalStartTime = performance.now();
-    console.log(ctx.canvas.width, ctx.canvas.height);
+
     const data = props.preprocess(ctx);
+    console.log(data);
     let outputTensor: Tensor;
     let inferenceTime: number;
     [outputTensor, inferenceTime] = await runModelUtils.runModel(session, data);
     console.log(outputTensor);
     console.log(inferenceTime);
-    setInferenceTime(inferenceTime);
-    ctx.clearRect(0, 0, originalSize.current[0], originalSize.current[1]);
+
     props.postprocess(outputTensor, props.inferenceTime, ctx);
-    // resizeCanvasCtx(ctx, originalSize.current[0], originalSize.current[1]);
     const totalEndTime = performance.now();
+    setInferenceTime(inferenceTime);
     setTotalTime(totalEndTime - totalStartTime);
   };
 
   const runLiveDetection = async () => {
+    if (liveDetection.current){
+      liveDetection.current = false;
+      return
+    } 
+    liveDetection.current = true;
     while (liveDetection.current) {
       const ctx = capture();
       console.log(ctx?.canvas.width, ctx?.canvas.height);
       if (!ctx) return;
       await runModel(ctx);
-      resizeCanvasCtx(ctx, originalSize.current[0], originalSize.current[1]);
+      // props.resizeCanvasCtx(ctx, originalSize.current[0], originalSize.current[1]);
       await new Promise<void>((resolve) =>
         requestAnimationFrame(() => resolve())
       );
@@ -101,6 +76,7 @@ const WebcamComponent = (props: any) => {
   };
 
   const processImage = async () => {
+    reset();
     const ctx = capture();
     if (!ctx) return;
 
@@ -111,34 +87,12 @@ const WebcamComponent = (props: any) => {
     boxCtx.canvas.width = ctx.canvas.width;
     boxCtx.canvas.height = ctx.canvas.height;
     boxCtx.drawImage(ctx.canvas, 0, 0);
+    console.log(boxCtx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height));
+
     await runModel(boxCtx);
-    ctx.drawImage(boxCtx.canvas, 0, 0);
-
-    props.resizeCanvasCtx(ctx, originalSize.current[0], originalSize.current[1]);
-
-    // const imageCtx = document
-    //   .createElement("canvas")
-    //   .getContext("2d") as CanvasRenderingContext2D;
-    // imageCtx.canvas.width = ctx.canvas.width;
-    // imageCtx.canvas.height = ctx.canvas.height;
-    // imageCtx.drawImage(ctx.canvas, 0, 0);
-
-    // ctx.canvas.width = originalSize.current[0];
-    // ctx.canvas.height = originalSize.current[1];
-    // ctx.drawImage(
-    //   imageCtx.canvas,
-    //   0,
-    //   0,
-    //   originalSize.current[0],
-    //   originalSize.current[1]
-    // );
-    // ctx.drawImage(
-    //   boxCtx.canvas,
-    //   0,
-    //   0,
-    //   originalSize.current[0],
-    //   originalSize.current[1]
-    // );
+    console.log(boxCtx.canvas.width, boxCtx.canvas.height);
+    console.log(ctx.canvas.width, ctx.canvas.height);
+    ctx.drawImage(boxCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height);
   };
 
   const reset = async () => {
@@ -184,7 +138,7 @@ const WebcamComponent = (props: any) => {
   }
   // resize_canvas();
   return (
-    <>
+    <div className="flex flex-row flex-wrap  justify-evenly align-center w-full">
       <div
         id="webcam-container"
         className="flex items-center justify-center webcam-container"
@@ -212,14 +166,59 @@ const WebcamComponent = (props: any) => {
           }}
         ></canvas>
       </div>
-      <div>
-        <div className="flex justify-between ">
+      <div className="flex flex-col justify-center items-center">
+        <div className="flex flex-row flex-wrap justify-center items-center p-5">
+          <div className="flex justify-center items-center items-stretch">
+            <button
+              onClick={() => {
+                processImage();
+              }}
+              //on hover, shift the button up
+              className="p-2 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
+            >
+              Capture Photo
+            </button>
+            <button
+              onClick={() => {
+                if (liveDetection.current) {
+                  liveDetection.current = false;
+                  // reset();
+                }else{
+
+                  runLiveDetection();
+                }
+              }}
+              //on hover, shift the button up
+              className="p-2  border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
+            >
+              Live Detection
+            </button>
+          </div>
+          <div className="flex  justify-center items-center items-stretch">
+            <button
+              onClick={() => {
+                setFacingMode(facingMode === "user" ? "environment" : "user");
+              }}
+              //on hover, shift the button up
+              className="p-2  border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
+            >
+              Switch Camera
+            </button>
+            <button
+              onClick={reset}
+              className="p-2  border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+        <div className="flex gap-3 flex-row flex-wrap justify-between items-center p-5">
           <div>
             {"Model Inference Time: " + inferenceTime + "ms"}
             <br />
-            {"Total Time: " + totalTime + "ms"}
+            {"Total Time: " + totalTime.toFixed() + "ms"}
             <br />
-            {"Overhead: " + (totalTime - inferenceTime).toFixed(2) + "ms"}
+            {"Overhead Time: +" + (totalTime - inferenceTime).toFixed(2) + "ms"}
           </div>
           <div>
             <div>
@@ -227,51 +226,14 @@ const WebcamComponent = (props: any) => {
             </div>
             <div>{"Total FPS: " + (1000 / totalTime).toFixed(2) + "fps"}</div>
             <div>
-              {"FPS lost to overhead: " +
-                (1000 * (1 / inferenceTime - 1 / totalTime)).toFixed(2) +
+              {"Overhead FPS: " +
+                (1000 * (1 / totalTime - 1 / inferenceTime)).toFixed(2) +
                 "fps"}
             </div>
           </div>
         </div>
-        <div className="flex flex-row justify-center">
-          <button
-            onClick={() => {
-              capture();
-              processImage();
-            }}
-            //on hover, shift the button up
-            className="p-2 mr-3 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
-          >
-            Capture Photo
-          </button>
-          <button
-            onClick={() => {
-              liveDetection.current = true;
-              runLiveDetection();
-            }}
-            //on hover, shift the button up
-            className="p-2 mr-3 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
-          >
-            Start Live Detection
-          </button>
-          <button
-            onClick={() => {
-              setFacingMode(facingMode === "user" ? "environment" : "user");
-            }}
-            //on hover, shift the button up
-            className="p-2 mr-3 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
-          >
-            Switch Camera
-          </button>
-          <button
-            onClick={reset}
-            className="p-2 my-5 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
-          >
-            Reset
-          </button>
-        </div>
       </div>
-    </>
+    </div>
   );
 };
 
