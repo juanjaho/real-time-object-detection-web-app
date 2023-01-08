@@ -12,20 +12,51 @@ const Yolo = (props: any) => {
   const resizeCanvasCtx = (
     ctx: CanvasRenderingContext2D,
     targetWidth: number,
-    targetHeight: number
+    targetHeight: number,
+    inPlace = false
   ) => {
-    ctx.canvas.width = targetWidth;
-    ctx.canvas.height = targetHeight;
+    let canvas: HTMLCanvasElement;
 
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(ctx.canvas, 0, 0, targetWidth, targetHeight);
+    if (inPlace) {
+      // Get the canvas element that the context is associated with
+      canvas = ctx.canvas;
+
+      // Set the canvas dimensions to the target width and height
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+
+      // Scale the context to the new dimensions
+      ctx.scale(
+        targetWidth / canvas.clientWidth,
+        targetHeight / canvas.clientHeight
+      );
+    } else {
+      // Create a new canvas element with the target dimensions
+      canvas = document.createElement("canvas");
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+
+      // Draw the source canvas into the target canvas
+      canvas
+        .getContext("2d")!
+        .drawImage(ctx.canvas, 0, 0, targetWidth, targetHeight);
+
+      // Get a new rendering context for the new canvas
+      ctx = canvas.getContext("2d")!;
+    }
+
+    return ctx;
   };
 
   const preprocess = (ctx: CanvasRenderingContext2D) => {
-    // resizeCanvasCtx(ctx, INPUT_DIM_WIDTH, INPUT_DIM_HEIGHT);
+    const resizedCtx = resizeCanvasCtx(ctx, INPUT_DIM_WIDTH, INPUT_DIM_HEIGHT);
 
-    const imageData = ctx.getImageData(0, 0, INPUT_DIM_HEIGHT, INPUT_DIM_WIDTH);
+    const imageData = resizedCtx.getImageData(
+      0,
+      0,
+      INPUT_DIM_HEIGHT,
+      INPUT_DIM_WIDTH
+    );
     const { data, width, height } = imageData;
     // data processing
     const dataTensor = ndarray(new Float32Array(data), [width, height, 4]);
@@ -73,15 +104,19 @@ const Yolo = (props: any) => {
     inferenceTime: number,
     ctx: CanvasRenderingContext2D
   ) => {
-    for (let i = 0; i < tensor.dims[0]; i++) {
-      // const [batch_id, x0, y0, x1, y1, cls_id, score] = tensor.data.slice( will return a number[] type
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      // resizeCanvasCtx(ctx, INPUT_DIM_WIDTH, INPUT_DIM_HEIGHT);
+    const dx = ctx.canvas.width / INPUT_DIM_WIDTH;
+    const dy = ctx.canvas.height / INPUT_DIM_HEIGHT;
 
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    for (let i = 0; i < tensor.dims[0]; i++) {
       let [batch_id, x0, y0, x1, y1, cls_id, score] = tensor.data.slice(
         i * 7,
         i * 7 + 7
       );
+
+      // scale to canvas size
+      [x0, x1] = [x0, x1].map((x: any) => x * dx);
+      [y0, y1] = [y0, y1].map((x: any) => x * dy);
 
       [batch_id, x0, y0, x1, y1, cls_id] = [
         batch_id,
@@ -91,7 +126,6 @@ const Yolo = (props: any) => {
         y1,
         cls_id,
       ].map((x: any) => round(x));
-      const box = [x0, y0, x1, y1].map((x: any) => round(x));
 
       [score] = [score].map((x: any) => round(x * 100, 1));
       const label =

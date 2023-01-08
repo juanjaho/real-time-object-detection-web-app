@@ -31,7 +31,7 @@ const WebcamComponent = (props: any) => {
     }) as CanvasRenderingContext2D;
 
     context.drawImage(
-      webcamRef.current?.video as HTMLVideoElement,
+      webcamRef.current!.video!,
       0,
       0,
       canvas.width,
@@ -65,7 +65,6 @@ const WebcamComponent = (props: any) => {
     liveDetection.current = true;
     while (liveDetection.current) {
       const ctx = capture();
-      console.log(ctx?.canvas.width, ctx?.canvas.height);
       if (!ctx) return;
       await runModel(ctx);
       // props.resizeCanvasCtx(ctx, originalSize.current[0], originalSize.current[1]);
@@ -96,7 +95,7 @@ const WebcamComponent = (props: any) => {
   };
 
   const reset = async () => {
-    var context = videoCanvasRef.current?.getContext(
+    var context = videoCanvasRef.current!.getContext(
       "2d"
     ) as CanvasRenderingContext2D;
 
@@ -108,7 +107,7 @@ const WebcamComponent = (props: any) => {
   const [SSR, setSSR] = useState<Boolean>(true);
 
   const setWebcamCanvasOverlaySize = () => {
-    const element = webcamRef.current?.video as HTMLVideoElement;
+    const element = webcamRef.current!.video as HTMLVideoElement;
     console.log(element.offsetHeight, element.offsetWidth);
     if (!element) return;
     var w = element.offsetWidth;
@@ -125,8 +124,8 @@ const WebcamComponent = (props: any) => {
       webcamRef.current.video.onloadedmetadata = () => {
         setWebcamCanvasOverlaySize();
         originalSize.current = [
-          webcamRef.current?.video?.offsetWidth,
-          webcamRef.current?.video?.offsetHeight,
+          webcamRef.current!.video!.offsetWidth,
+          webcamRef.current!.video!.offsetHeight,
         ] as number[];
         // console.log(originalSize.current);
       };
@@ -151,8 +150,8 @@ const WebcamComponent = (props: any) => {
           imageSmoothing={true}
           videoConstraints={{
             facingMode: facingMode,
-            width: props.width,
-            height: props.height,
+            // width: props.width,
+            // height: props.height,
           }}
           forceScreenshotSourceSize={true}
         />
@@ -189,7 +188,11 @@ const WebcamComponent = (props: any) => {
                 }
               }}
               //on hover, shift the button up
-              className="p-2  border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
+              className={`
+              p-2  border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1
+              ${liveDetection.current ? "bg-white text-black" : ""}
+              
+              `}
             >
               Live Detection
             </button>
@@ -200,7 +203,7 @@ const WebcamComponent = (props: any) => {
                 setFacingMode(facingMode === "user" ? "environment" : "user");
               }}
               //on hover, shift the button up
-              className="p-2  border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
+              className="p-2  border-dashed border-2 rounded-xl active:translate-y-1 hover:translate-y-1 "
             >
               Switch Camera
             </button>

@@ -18,7 +18,7 @@ export default function Home() {
       </Head>
       <main className="font-mono flex flex-col justify-center items-center h-screen w-screen">
         <h1 className="p-5 text-xl">Real-Time Object Detection</h1>
-        <Yolo  width = {640} height = {640} />
+        <Yolo  />
         <p className="p-5">
           Created by{" "}
           <a
