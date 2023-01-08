@@ -2,6 +2,8 @@
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 
+
+
 const nextConfig = {
   reactStrictMode: true,
   webpack: (config, {  }) => {
@@ -32,4 +34,10 @@ const nextConfig = {
   } 
 }
 
-module.exports = nextConfig
+const withPWA = require('next-pwa')({
+  dest: 'public'
+})
+
+module.exports = withPWA(nextConfig)
+
+// module.exports = nextConfig
