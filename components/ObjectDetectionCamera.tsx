@@ -143,7 +143,7 @@ const WebcamComponent = (props: any) => {
         className="flex items-center justify-center webcam-container"
       >
         <Webcam
-          // mirrored={false}
+          mirrored={true}
           audio={false}
           ref={webcamRef}
           screenshotFormat="image/jpeg"
