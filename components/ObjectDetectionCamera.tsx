@@ -165,7 +165,7 @@ const WebcamComponent = (props: any) => {
         ></canvas>
       </div>
       <div className="flex flex-col justify-center items-center">
-        <div className="flex gap-1 flex-row flex-wrap justify-center items-center p-5">
+        <div className="flex gap-1 flex-row flex-wrap justify-center items-center m-5">
           <div className="flex gap-1 justify-center items-center items-stretch">
             <button
               onClick={() => {
@@ -212,7 +212,7 @@ const WebcamComponent = (props: any) => {
             </button>
           </div>
         </div>
-        <div className="flex gap-3 flex-row flex-wrap justify-between items-center p-5 w-full">
+        <div className="flex gap-3 flex-row flex-wrap justify-between items-center px-5 w-full">
           <div>
             {"Model Inference Time: " + inferenceTime + "ms"}
             <br />
