@@ -1,14 +1,8 @@
 import Head from "next/head";
-import Image from "next/image";
-import { Inter } from "@next/font/google";
-import styles from "../styles/Home.module.css";
-// import ObjectDetectionCamera from "../components/ObjectDetectionCamera";
 import Yolo from "../components/models/Yolo";
 
-const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
- 
   return (
     <>
       <Head>
@@ -16,6 +10,7 @@ export default function Home() {
         <meta name="description" content="Created by juanjaho" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="font-mono flex flex-col justify-center items-center  w-screen">
