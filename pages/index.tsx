@@ -16,10 +16,10 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="font-mono flex flex-col justify-center items-center h-screen w-screen">
+      <main className="font-mono flex flex-col justify-center items-center  w-screen">
         <h1 className="m-5 text-xl">Real-Time Object Detection</h1>
         <Yolo  />
-        <p className="p-5">
+        <p className="m-5">
           Created by{" "}
           <a
             className="underline underline-offset-1 hover:translate-y-1"
