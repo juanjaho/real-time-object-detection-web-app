@@ -118,7 +118,6 @@ const WebcamComponent = (props: any) => {
   };
 
   useEffect(() => {
-    setSSR(false);
     if (webcamRef.current && webcamRef.current.video) {
       webcamRef.current.video.onloadedmetadata = () => {
         setWebcamCanvasOverlaySize();
@@ -137,8 +136,10 @@ const WebcamComponent = (props: any) => {
       if (document.hidden) {
         liveDetection.current = false;
       } 
-      // 
+      // set SSR to true to prevent webcam from loading when tab is not active
+      setSSR(document.hidden);
     };
+    setSSR(document.hidden);
     document.addEventListener("visibilitychange", handleVisibilityChange);
   }, []);
   
