@@ -70,7 +70,6 @@ const WebcamComponent = (props: any) => {
       const ctx = capture();
       if (!ctx) return;
       await runModel(ctx);
-      // props.resizeCanvasCtx(ctx, originalSize.current[0], originalSize.current[1]);
       await new Promise<void>((resolve) =>
         requestAnimationFrame(() => resolve())
       );
@@ -129,7 +128,7 @@ const WebcamComponent = (props: any) => {
   if (SSR) {
     return <div>Loading...</div>;
   }
-  // resize_canvas();
+
   return (
     <div className="flex flex-row flex-wrap  justify-evenly align-center w-full">
       <div
@@ -173,7 +172,6 @@ const WebcamComponent = (props: any) => {
               onClick={() => {
                 processImage();
               }}
-              //on hover, shift the button up
               className="p-2 border-dashed border-2 rounded-xl hover:translate-y-1 "
             >
               Capture Photo
@@ -182,7 +180,6 @@ const WebcamComponent = (props: any) => {
               onClick={() => {
                 if (liveDetection.current) {
                   liveDetection.current = false;
-                  // reset();
                 } else {
                   runLiveDetection();
                 }

@@ -135,7 +135,6 @@ const Yolo = (props: any) => {
         score.toString() +
         "%";
       const color = conf2color(score / 100);
-      // const color = [255, 125, 125];
 
       ctx.strokeStyle = color;
       ctx.lineWidth = 3;
@@ -158,7 +157,6 @@ const Yolo = (props: any) => {
       postprocess={postprocess}
       resizeCanvasCtx={resizeCanvasCtx}
       modelUri={"./_next/static/chunks/pages/yolov7-tiny.onnx"}
-      modelFilePath={"./_next/static/chunks/pages/yolov7-tiny.onnx"}
     />
   );
 };
