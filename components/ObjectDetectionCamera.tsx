@@ -165,14 +165,14 @@ const WebcamComponent = (props: any) => {
         ></canvas>
       </div>
       <div className="flex flex-col justify-center items-center">
-        <div className="flex flex-row flex-wrap justify-center items-center p-5">
-          <div className="flex justify-center items-center items-stretch">
+        <div className="flex gap-1 flex-row flex-wrap justify-center items-center p-5">
+          <div className="flex gap-1 justify-center items-center items-stretch">
             <button
               onClick={() => {
                 processImage();
               }}
               //on hover, shift the button up
-              className="p-2 border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
+              className="p-2 border-dashed border-2 rounded-xl hover:translate-y-1 "
             >
               Capture Photo
             </button>
@@ -187,7 +187,7 @@ const WebcamComponent = (props: any) => {
               }}
               //on hover, shift the button up
               className={`
-              p-2  border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1
+              p-2  border-dashed border-2 rounded-xl hover:translate-y-1 
               ${liveDetection.current ? "bg-white text-black" : ""}
               
               `}
@@ -195,25 +195,24 @@ const WebcamComponent = (props: any) => {
               Live Detection
             </button>
           </div>
-          <div className="flex  justify-center items-center items-stretch">
+          <div className="flex gap-1 justify-center items-center items-stretch">
             <button
               onClick={() => {
                 setFacingMode(facingMode === "user" ? "environment" : "user");
               }}
-              //on hover, shift the button up
-              className="p-2  border-dashed border-2 rounded-xl active:translate-y-1 hover:translate-y-1 "
+              className="p-2  border-dashed border-2 rounded-xl hover:translate-y-1 "
             >
               Switch Camera
             </button>
             <button
               onClick={reset}
-              className="p-2  border-dashed border-2 rounded-xl hover:translate-y-1 active:translate-y-1"
+              className="p-2  border-dashed border-2 rounded-xl hover:translate-y-1 "
             >
               Reset
             </button>
           </div>
         </div>
-        <div className="flex gap-3 flex-row flex-wrap justify-between items-center p-5">
+        <div className="flex gap-3 flex-row flex-wrap justify-between items-center p-5 w-full">
           <div>
             {"Model Inference Time: " + inferenceTime + "ms"}
             <br />

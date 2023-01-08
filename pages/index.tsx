@@ -19,7 +19,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="font-mono flex flex-col justify-center items-center  w-screen">
-        <h1 className="m-5 text-xl">Real-Time Object Detection</h1>
+        <h1 className="m-5 text-xl font-bold">Real-Time Object Detection</h1>
         <Yolo  />
         <p className="m-5">
           Created by{" "}
