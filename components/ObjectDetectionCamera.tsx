@@ -39,7 +39,7 @@ const WebcamComponent = (props: any) => {
       canvas.width,
       canvas.height
     );
-    
+
     if (facingMode === "user") {
       context.setTransform(1, 0, 0, 1, 0, 0);
     }
@@ -113,32 +113,19 @@ const WebcamComponent = (props: any) => {
     cv.height = h;
   };
 
-  useEffect(() => {
-    if (webcamRef.current && webcamRef.current.video) {
-      webcamRef.current.video.onloadedmetadata = () => {
-        setWebcamCanvasOverlaySize();
-        originalSize.current = [
-          webcamRef.current!.video!.offsetWidth,
-          webcamRef.current!.video!.offsetHeight,
-        ] as number[];
-      };
-    }
-  }, [webcamRef.current?.video]);
-
   // close camera when browser tab is minimized
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         liveDetection.current = false;
-      } 
+      }
       // set SSR to true to prevent webcam from loading when tab is not active
       setSSR(document.hidden);
     };
     setSSR(document.hidden);
     document.addEventListener("visibilitychange", handleVisibilityChange);
   }, []);
-  
-  
+
   if (SSR) {
     return <div>Loading...</div>;
   }
@@ -159,6 +146,13 @@ const WebcamComponent = (props: any) => {
             facingMode: facingMode,
             // width: props.width,
             // height: props.height,
+          }}
+          onLoadedMetadata={() => {
+            setWebcamCanvasOverlaySize();
+            originalSize.current = [
+              webcamRef.current!.video!.offsetWidth,
+              webcamRef.current!.video!.offsetHeight,
+            ] as number[];
           }}
           forceScreenshotSourceSize={true}
         />
