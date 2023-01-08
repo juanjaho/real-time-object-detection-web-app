@@ -131,6 +131,18 @@ const WebcamComponent = (props: any) => {
     }
   }, [webcamRef.current?.video]);
 
+  // close camera when browser tab is minimized
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        liveDetection.current = false;
+      } 
+      // 
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+  }, []);
+  
+  
   if (SSR) {
     return <div>Loading...</div>;
   }
