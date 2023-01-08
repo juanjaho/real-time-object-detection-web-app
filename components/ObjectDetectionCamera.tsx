@@ -24,11 +24,14 @@ const WebcamComponent = (props: any) => {
   }, [props.modelUri]);
 
   const capture = () => {
-    if (!videoCanvasRef.current) return;
-    const canvas = videoCanvasRef.current;
+    const canvas = videoCanvasRef.current!;
     const context = canvas.getContext("2d", {
       willReadFrequently: true,
-    }) as CanvasRenderingContext2D;
+    })!;
+
+    if (facingMode === "user") {
+      context.setTransform(-1, 0, 0, 1, canvas.width, 0);
+    }
 
     context.drawImage(
       webcamRef.current!.video!,
@@ -37,6 +40,10 @@ const WebcamComponent = (props: any) => {
       canvas.width,
       canvas.height
     );
+    
+    if (facingMode === "user") {
+      context.setTransform(1, 0, 0, 1, 0, 0);
+    }
     return context;
   };
 
@@ -58,10 +65,10 @@ const WebcamComponent = (props: any) => {
   };
 
   const runLiveDetection = async () => {
-    if (liveDetection.current){
+    if (liveDetection.current) {
       liveDetection.current = false;
-      return
-    } 
+      return;
+    }
     liveDetection.current = true;
     while (liveDetection.current) {
       const ctx = capture();
@@ -86,33 +93,25 @@ const WebcamComponent = (props: any) => {
     boxCtx.canvas.width = ctx.canvas.width;
     boxCtx.canvas.height = ctx.canvas.height;
     boxCtx.drawImage(ctx.canvas, 0, 0);
-    console.log(boxCtx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height));
 
     await runModel(boxCtx);
-    console.log(boxCtx.canvas.width, boxCtx.canvas.height);
-    console.log(ctx.canvas.width, ctx.canvas.height);
     ctx.drawImage(boxCtx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height);
   };
 
   const reset = async () => {
-    var context = videoCanvasRef.current!.getContext(
-      "2d"
-    ) as CanvasRenderingContext2D;
-
+    var context = videoCanvasRef.current!.getContext("2d")!;
     context.clearRect(0, 0, originalSize.current[0], originalSize.current[1]);
     liveDetection.current = false;
-    console.log(liveDetection);
   };
 
   const [SSR, setSSR] = useState<Boolean>(true);
 
   const setWebcamCanvasOverlaySize = () => {
-    const element = webcamRef.current!.video as HTMLVideoElement;
-    console.log(element.offsetHeight, element.offsetWidth);
+    const element = webcamRef.current!.video!;
     if (!element) return;
     var w = element.offsetWidth;
     var h = element.offsetHeight;
-    var cv = videoCanvasRef.current as HTMLCanvasElement;
+    var cv = videoCanvasRef.current;
     if (!cv) return;
     cv.width = w;
     cv.height = h;
@@ -143,7 +142,7 @@ const WebcamComponent = (props: any) => {
         className="flex items-center justify-center webcam-container"
       >
         <Webcam
-          mirrored={true}
+          mirrored={facingMode === "user"}
           audio={false}
           ref={webcamRef}
           screenshotFormat="image/jpeg"
@@ -182,8 +181,7 @@ const WebcamComponent = (props: any) => {
                 if (liveDetection.current) {
                   liveDetection.current = false;
                   // reset();
-                }else{
-
+                } else {
                   runLiveDetection();
                 }
               }}
