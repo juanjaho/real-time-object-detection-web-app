@@ -10,7 +10,7 @@ const WebcamComponent = (props: any) => {
   const videoCanvasRef = useRef<HTMLCanvasElement>(null);
   const liveDetection = useRef<boolean>(false);
   const [session, setSession] = useState<any>(null);
-  const [facingMode, setFacingMode] = useState<string>("user");
+  const [facingMode, setFacingMode] = useState<string>("environment");
 
   const originalSize = useRef<number[]>([0, 0]);
 
