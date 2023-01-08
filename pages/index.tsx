@@ -8,12 +8,14 @@ import Yolo from "../components/models/Yolo";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
+ 
   return (
     <>
       <Head>
         <title>Real Time Object Detection</title>
         <meta name="description" content="Created by juanjaho" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="font-mono flex flex-col justify-center items-center  w-screen">
