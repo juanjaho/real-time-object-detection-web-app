@@ -16,7 +16,6 @@ const WebcamComponent = (props: any) => {
 
   useEffect(() => {
     const getSession = async () => {
-      console.log(props.modelUri);
       const session = await runModelUtils.createModelCpu(props.modelUri);
       setSession(session);
     };
@@ -51,12 +50,9 @@ const WebcamComponent = (props: any) => {
     const totalStartTime = performance.now();
 
     const data = props.preprocess(ctx);
-    console.log(data);
     let outputTensor: Tensor;
     let inferenceTime: number;
     [outputTensor, inferenceTime] = await runModelUtils.runModel(session, data);
-    console.log(outputTensor);
-    console.log(inferenceTime);
 
     props.postprocess(outputTensor, props.inferenceTime, ctx);
     const totalEndTime = performance.now();
@@ -125,7 +121,6 @@ const WebcamComponent = (props: any) => {
           webcamRef.current!.video!.offsetWidth,
           webcamRef.current!.video!.offsetHeight,
         ] as number[];
-        // console.log(originalSize.current);
       };
     }
   }, [webcamRef.current?.video]);

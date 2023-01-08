@@ -6,7 +6,7 @@ export default function Document() {
       <Head>
         <title>Real-Time Object Detection</title>
         <meta name="description" content="Real-Time Object Detection" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* <meta name="viewport" content="width=device-width, initial-scale=1" /> */}
         <meta name="application-name" content="Real-Time Object Detection" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
