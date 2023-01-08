@@ -47,8 +47,6 @@ const WebcamComponent = (props: any) => {
   };
 
   const runModel = async (ctx: CanvasRenderingContext2D) => {
-    const totalStartTime = performance.now();
-
     const data = props.preprocess(ctx);
     let outputTensor: Tensor;
     let inferenceTime: number;
@@ -57,7 +55,6 @@ const WebcamComponent = (props: any) => {
     props.postprocess(outputTensor, props.inferenceTime, ctx);
     const totalEndTime = performance.now();
     setInferenceTime(inferenceTime);
-    setTotalTime(totalEndTime - totalStartTime);
   };
 
   const runLiveDetection = async () => {
@@ -67,9 +64,11 @@ const WebcamComponent = (props: any) => {
     }
     liveDetection.current = true;
     while (liveDetection.current) {
+      const startTime = performance.now();
       const ctx = capture();
       if (!ctx) return;
       await runModel(ctx);
+      setTotalTime(performance.now() - startTime);
       await new Promise<void>((resolve) =>
         requestAnimationFrame(() => resolve())
       );
@@ -169,19 +168,22 @@ const WebcamComponent = (props: any) => {
         <div className="flex gap-1 flex-row flex-wrap justify-center items-center m-5">
           <div className="flex gap-1 justify-center items-center items-stretch">
             <button
-              onClick={() => {
-                processImage();
+              onClick={async () => {
+                const startTime = performance.now();
+                await processImage();
+                setTotalTime(performance.now() - startTime);
               }}
               className="p-2 border-dashed border-2 rounded-xl hover:translate-y-1 "
             >
               Capture Photo
             </button>
             <button
-              onClick={() => {
+              onClick={async () => {
                 if (liveDetection.current) {
                   liveDetection.current = false;
                 } else {
                   runLiveDetection();
+                  console.log("asdf");
                 }
               }}
               //on hover, shift the button up
