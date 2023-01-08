@@ -9,15 +9,15 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Realtime Object Detection</title>
-        <meta name="description" content="Created by juanjaho" />
+        <title>Real-Time Object Detection</title>
+        <meta name="description" content="Real-Time Object Detection" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <link rel="icon" href="/icon.png" />
+        {/* <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" /> */}
+        {/* <link rel="icon" href="/icon.png" /> */}
       </Head>
       <main className="font-mono flex flex-col justify-center items-center  w-screen">
-        <h1 className="m-5 text-xl font-bold">Realtime Object Detection</h1>
+        <h1 className="m-5 text-xl font-bold">Real-Time Object Detection</h1>
         <Yolo  />
         <p className="m-5">
           Created by{" "}
