@@ -11,7 +11,7 @@ const WebcamComponent = (props: any) => {
   const liveDetection = useRef<boolean>(false);
   const [session, setSession] = useState<any>(null);
   const [facingMode, setFacingMode] = useState<string>("environment");
-
+  const [modelResolution, setModelResolution] = useState<string>("320x320");
   const originalSize = useRef<number[]>([0, 0]);
 
   useEffect(() => {
@@ -53,7 +53,6 @@ const WebcamComponent = (props: any) => {
     [outputTensor, inferenceTime] = await runModelUtils.runModel(session, data);
 
     props.postprocess(outputTensor, props.inferenceTime, ctx);
-    const totalEndTime = performance.now();
     setInferenceTime(inferenceTime);
   };
 
@@ -64,13 +63,13 @@ const WebcamComponent = (props: any) => {
     }
     liveDetection.current = true;
     while (liveDetection.current) {
-      const startTime = performance.now();
+      const startTime = Date.now()
       const ctx = capture();
       if (!ctx) return;
       await runModel(ctx);
-      setTotalTime(performance.now() - startTime);
+      setTotalTime(Date.now() - startTime);
       await new Promise<void>((resolve) =>
-        requestAnimationFrame(() => resolve())
+      requestAnimationFrame(() => resolve())
       );
     }
   };
@@ -169,9 +168,9 @@ const WebcamComponent = (props: any) => {
           <div className="flex gap-1 justify-center items-center items-stretch">
             <button
               onClick={async () => {
-                const startTime = performance.now();
+                const startTime = Date.now();
                 await processImage();
-                setTotalTime(performance.now() - startTime);
+                setTotalTime(Date.now() - startTime);
               }}
               className="p-2 border-dashed border-2 rounded-xl hover:translate-y-1 "
             >
@@ -183,7 +182,6 @@ const WebcamComponent = (props: any) => {
                   liveDetection.current = false;
                 } else {
                   runLiveDetection();
-                  console.log("asdf");
                 }
               }}
               //on hover, shift the button up
@@ -206,6 +204,21 @@ const WebcamComponent = (props: any) => {
               Switch Camera
             </button>
             <button
+              onClick={() => {
+                reset();
+                if (modelResolution == "320x320"){
+                  setModelResolution("640x640")
+                  props.changeModelResolution("640x640")
+                }else{
+                  setModelResolution('320x320')
+                  props.changeModelResolution("320x320")
+                }
+              }}
+              className="p-2  border-dashed border-2 rounded-xl hover:translate-y-1 "
+            >
+              Change Speed
+            </button>
+            <button
               onClick={reset}
               className="p-2  border-dashed border-2 rounded-xl hover:translate-y-1 "
             >
@@ -215,7 +228,7 @@ const WebcamComponent = (props: any) => {
         </div>
         <div className="flex gap-3 flex-row flex-wrap justify-between items-center px-5 w-full">
           <div>
-            {"Model Inference Time: " + inferenceTime + "ms"}
+            {"Model Inference Time: " + inferenceTime.toFixed() + "ms"}
             <br />
             {"Total Time: " + totalTime.toFixed() + "ms"}
             <br />

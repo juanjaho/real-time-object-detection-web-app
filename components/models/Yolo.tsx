@@ -4,11 +4,23 @@ import ops from "ndarray-ops";
 import ObjectDetectionCamera from "../ObjectDetectionCamera";
 import { round } from "lodash";
 import { yoloClasses } from "../../data/yolo_classes";
+import { useState } from "react";
+const mapResolution = new Map();
+mapResolution.set("320x320", [320, 320])
+mapResolution.set("640x640", [640, 640])
 
-const INPUT_DIM_WIDTH = 640;
-const INPUT_DIM_HEIGHT = 640;
 
 const Yolo = (props: any) => {
+  const [modelInputDimensions, setModelInputDimensions] = useState<number[]>([
+    320, 320,
+  ]);
+
+  const changeModelResolution = (model: string) => {
+    if (mapResolution.get(model)) {
+      setModelInputDimensions(mapResolution.get(model));
+    }
+  }
+
   const resizeCanvasCtx = (
     ctx: CanvasRenderingContext2D,
     targetWidth: number,
@@ -49,13 +61,17 @@ const Yolo = (props: any) => {
   };
 
   const preprocess = (ctx: CanvasRenderingContext2D) => {
-    const resizedCtx = resizeCanvasCtx(ctx, INPUT_DIM_WIDTH, INPUT_DIM_HEIGHT);
+    const resizedCtx = resizeCanvasCtx(
+      ctx,
+      modelInputDimensions[0],
+      modelInputDimensions[1]
+    );
 
     const imageData = resizedCtx.getImageData(
       0,
       0,
-      INPUT_DIM_HEIGHT,
-      INPUT_DIM_WIDTH
+      modelInputDimensions[0],
+      modelInputDimensions[1]
     );
     const { data, width, height } = imageData;
     // data processing
@@ -104,8 +120,8 @@ const Yolo = (props: any) => {
     inferenceTime: number,
     ctx: CanvasRenderingContext2D
   ) => {
-    const dx = ctx.canvas.width / INPUT_DIM_WIDTH;
-    const dy = ctx.canvas.height / INPUT_DIM_HEIGHT;
+    const dx = ctx.canvas.width / modelInputDimensions[0];
+    const dy = ctx.canvas.height / modelInputDimensions[1];
 
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     for (let i = 0; i < tensor.dims[0]; i++) {
@@ -156,7 +172,8 @@ const Yolo = (props: any) => {
       preprocess={preprocess}
       postprocess={postprocess}
       resizeCanvasCtx={resizeCanvasCtx}
-      modelUri={"./_next/static/chunks/pages/yolov7-tiny.onnx"}
+      modelUri={`./_next/static/chunks/pages/yolov7-tiny_${modelInputDimensions[0]}x${modelInputDimensions[1]}.onnx`}
+      changeModelResolution={changeModelResolution}
     />
   );
 };
