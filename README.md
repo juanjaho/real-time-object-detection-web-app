@@ -51,7 +51,7 @@ If you want to contribute to this project, please feel free to submit a pull req
 ## Authors
 Juan Sebastian - Initial work - [@juanjaho](https://github.com/juanjaho)
 ## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 - Hats off to the ONNXRuntime team for making such a powerful tool accessible to developers.
