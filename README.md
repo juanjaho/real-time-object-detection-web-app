@@ -13,12 +13,12 @@ In order to run this project, you will need to have the following software insta
 ### Installation
 1. Clone the repository to your local machine:
 ```
-git clone https://github.com/juanjaho/real-time-object-detection.git
+https://github.com/juanjaho/real-time-object-detection-web-app.git
 ```
 
 2. Navigate to the project directory:
 ```
-cd real-time-object-detection
+cd real-time-object-detection-web-app
 ```
 
 3. Install the necessary dependencies by running:
