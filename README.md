@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Real-time Object Detection Web App
+This project is a web-based application that utilizes real-time object detection to identify and label objects within an image or video stream. It is built using Next.js, ONNXRuntime, and YOLOv model.
 
 ## Getting Started
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
-First, run the development server:
+### Prerequisites
+In order to run this project, you will need to have the following software installed on your machine:
 
-```bash
+- Node.js
+- A web browser 
+
+### Installation
+1. Clone the repository to your local machine:
+```
+git clone https://github.com/YOUR_USERNAME/real-time-object-detection.git
+```
+
+2. Navigate to the project directory:
+```
+cd real-time-object-detection
+```
+
+3. Install the necessary dependencies by running:
+```
+npm install
+#or 
+yarn install
+```
+
+4. Start the development server by running:
+```
 npm run dev
-# or
+#or
 yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5. Open your web browser and navigate to http://localhost:3000 to view the application.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+### Deployment
+This project can be deployed to a web server for public access. For more information on deploying a Next.js application, please visit the official [documentation](https://nextjs.org/docs/deployment/)
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## Built With
+- [ONNXRuntime](https://onnxruntime.ai/) - An open-source project for running inferences using pre-trained models in a variety of formats.
+- [YOLOv7](https://github.com/WongKinYiu/yolov7) - A Object detection model which is used in this project.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Contributing
+If you want to contribute to this project, please feel free to submit a pull request. Any contributions, big or small, are greatly appreciated!
 
-## Learn More
+## Authors
+Juan Sebastian - Initial work - [@juanjaho](https://github.com/juanjaho)
+## License
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-To learn more about Next.js, take a look at the following resources:
+## Acknowledgments
+- Hats off to the ONNXRuntime team for making such a powerful tool accessible to developers.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Thank you to all the contributors to the open-source libraries used in this project.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+- Inspiration for this project was taken from my previous project [AnimeArcaneGAN_Mobile](https://github.com/juanjaho/AnimeArcaneGAN_Mobile)
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Citation
+```
+@article{wang2022yolov7,
+  title={{YOLOv7}: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors},
+  author={Wang, Chien-Yao and Bochkovskiy, Alexey and Liao, Hong-Yuan Mark},
+  journal={arXiv preprint arXiv:2207.02696},
+  year={2022}
+}
+```

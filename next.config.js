@@ -2,7 +2,9 @@
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 
-
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+})
 
 const nextConfig = {
   reactStrictMode: true,
@@ -31,13 +33,15 @@ const nextConfig = {
     );
 
     return config;
-  } 
+  },
 }
 
 const withPWA = require('next-pwa')({
   dest: 'public'
 })
 
-module.exports = withPWA(nextConfig)
+
+module.exports = withBundleAnalyzer(withPWA(nextConfig))
+
 
 // module.exports = nextConfig
