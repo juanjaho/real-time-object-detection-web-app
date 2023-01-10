@@ -65,13 +65,15 @@ Juan Sebastian - Initial work - [@juanjaho](https://github.com/juanjaho)
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
+- Special thanks to [@WongKinYiu](https://github.com/WongKinYiu) for creating such an amazing [YOLOv7](https://github.com/WongKinYiu/yolov7) model.
+
 - Hats off to the ONNXRuntime team for making such a powerful tool accessible to developers.
 
 - Thank you to all the contributors to the open-source libraries used in this project.
 
 - Inspiration for this project was taken from my previous project [AnimeArcaneGAN_Mobile](https://github.com/juanjaho/AnimeArcaneGAN_Mobile)
 
-## Citation
+## Citation for YOLOv7
 ```
 @article{wang2022yolov7,
   title={{YOLOv7}: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors},
