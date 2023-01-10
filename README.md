@@ -61,6 +61,7 @@ If you want to contribute to this project, please feel free to submit a pull req
 
 ## Authors
 Juan Sebastian - Initial work - [@juanjaho](https://github.com/juanjaho)
+
 ## License
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
 
@@ -68,6 +69,8 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 - Special thanks to [@WongKinYiu](https://github.com/WongKinYiu) for creating such an amazing [YOLOv7](https://github.com/WongKinYiu/yolov7) model.
 
 - Hats off to the ONNXRuntime team for making such a powerful tool accessible to developers.
+
+- Referenced [ONNXRuntime Web Demo](https://github.com/microsoft/onnxruntime-web-demo) for guidance on how to use ONNXRuntime in a web application.
 
 - Thank you to all the contributors to the open-source libraries used in this project.
 
