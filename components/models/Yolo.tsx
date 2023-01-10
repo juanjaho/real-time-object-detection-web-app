@@ -5,21 +5,42 @@ import ObjectDetectionCamera from "../ObjectDetectionCamera";
 import { round } from "lodash";
 import { yoloClasses } from "../../data/yolo_classes";
 import { useState } from "react";
-const mapResolution = new Map();
-mapResolution.set("320x320", [320, 320])
-mapResolution.set("640x640", [640, 640])
+import { useEffect } from "react";
+import { runModelUtils } from "../../utils";
 
+const RES_TO_MODEL: [number[], string][] = [
+  [[256,256], "yolov7-tiny_256x256.onnx"],
+  [[320, 320], "yolov7-tiny_320x320.onnx"],
+  [[640, 640], "yolov7-tiny_640x640.onnx"],
+];
 
 const Yolo = (props: any) => {
-  const [modelInputDimensions, setModelInputDimensions] = useState<number[]>([
-    320, 320,
-  ]);
+  const [modelResolution, setModelResolution] = useState<number[]>(
+    RES_TO_MODEL[0][0]
+  );
+  const [modelName, setModelName] = useState<string>(RES_TO_MODEL[0][1]);
+  const [session, setSession] = useState<any>(null);
 
-  const changeModelResolution = (model: string) => {
-    if (mapResolution.get(model)) {
-      setModelInputDimensions(mapResolution.get(model));
+  useEffect(() => {
+    const getSession = async () => {
+      const session = await runModelUtils.createModelCpu(
+        `./_next/static/chunks/pages/${modelName}`
+      );
+      setSession(session);
+    };
+    getSession();
+  }, [modelName]);
+
+  const changeModelResolution = () => {
+    const index = RES_TO_MODEL.findIndex((item) => item[0] === modelResolution);
+    if (index === RES_TO_MODEL.length - 1) {
+      setModelResolution(RES_TO_MODEL[0][0]);
+      setModelName(RES_TO_MODEL[0][1]);
+    } else {
+      setModelResolution(RES_TO_MODEL[index + 1][0]);
+      setModelName(RES_TO_MODEL[index + 1][1]);
     }
-  }
+  };
 
   const resizeCanvasCtx = (
     ctx: CanvasRenderingContext2D,
@@ -63,15 +84,15 @@ const Yolo = (props: any) => {
   const preprocess = (ctx: CanvasRenderingContext2D) => {
     const resizedCtx = resizeCanvasCtx(
       ctx,
-      modelInputDimensions[0],
-      modelInputDimensions[1]
+      modelResolution[0],
+      modelResolution[1]
     );
 
     const imageData = resizedCtx.getImageData(
       0,
       0,
-      modelInputDimensions[0],
-      modelInputDimensions[1]
+      modelResolution[0],
+      modelResolution[1]
     );
     const { data, width, height } = imageData;
     // data processing
@@ -120,8 +141,8 @@ const Yolo = (props: any) => {
     inferenceTime: number,
     ctx: CanvasRenderingContext2D
   ) => {
-    const dx = ctx.canvas.width / modelInputDimensions[0];
-    const dy = ctx.canvas.height / modelInputDimensions[1];
+    const dx = ctx.canvas.width / modelResolution[0];
+    const dy = ctx.canvas.height / modelResolution[1];
 
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     for (let i = 0; i < tensor.dims[0]; i++) {
@@ -172,8 +193,9 @@ const Yolo = (props: any) => {
       preprocess={preprocess}
       postprocess={postprocess}
       resizeCanvasCtx={resizeCanvasCtx}
-      modelUri={`./_next/static/chunks/pages/yolov7-tiny_${modelInputDimensions[0]}x${modelInputDimensions[1]}.onnx`}
+      session={session}
       changeModelResolution={changeModelResolution}
+      modelName={modelName}
     />
   );
 };
