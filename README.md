@@ -2,7 +2,7 @@
 This project is a web-based application that utilizes real-time object detection to identify and label objects within an image or video stream. It is built using Next.js, ONNXRuntime, and YOLOv model.
 
 ## Demo at [ROTD.vercel.app](rtod.vercel.app)
-<video src="demo/demo.m4v" width = "60%"></video>
+<video src="demo/demo.mp4" width = "60%"></video>
 
 
 ## Getting Started
