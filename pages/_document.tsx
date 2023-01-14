@@ -24,6 +24,8 @@ export default function Document() {
 
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/icon.png" />
+        
+        <meta name="google-site-verification" content="kPFEI7Zrf_ZNTei2hRsBk-luHRtoO6a9AvndfpekAc8" />
       </Head>
       <body>
         <Main />
