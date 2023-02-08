@@ -1,5 +1,5 @@
 # Real-time Object Detection Web App
-This project is a web-based application that utilizes real-time object detection to identify and label objects within an image or video stream. It is built using Next.js, ONNXRuntime, and YOLOv model.
+This project is a web-based application that utilizes real-time object detection to identify and label objects within an image or video stream. It is built using Next.js, ONNXRuntime, and YOLOv7 model.
 
 ## Demo at [RTOD.vercel.app](https://rtod.vercel.app)
 <div align="center" >
