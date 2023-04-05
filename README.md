@@ -71,7 +71,7 @@ If you want to contribute to this project, please feel free to submit a pull req
 Juan Sebastian - Initial work - [@juanjaho](https://github.com/juanjaho)
 
 ## License
-This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE.md) file for details.
 
 ## Acknowledgments
 - Special thanks to [@WongKinYiu](https://github.com/WongKinYiu) for creating such an amazing [YOLOv7](https://github.com/WongKinYiu/yolov7) model.
