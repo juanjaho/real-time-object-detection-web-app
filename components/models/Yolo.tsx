@@ -1,17 +1,18 @@
-import ndarray from "ndarray";
-import { Tensor } from "onnxruntime-web";
-import ops from "ndarray-ops";
-import ObjectDetectionCamera from "../ObjectDetectionCamera";
-import { round } from "lodash";
-import { yoloClasses } from "../../data/yolo_classes";
-import { useState } from "react";
-import { useEffect } from "react";
-import { runModelUtils } from "../../utils";
+import ndarray from 'ndarray';
+import { Tensor } from 'onnxruntime-web';
+import ops from 'ndarray-ops';
+import ObjectDetectionCamera from '../ObjectDetectionCamera';
+import { round } from 'lodash';
+import { yoloClasses } from '../../data/yolo_classes';
+import { useState } from 'react';
+import { useEffect } from 'react';
+import { runModelUtils } from '../../utils';
 
 const RES_TO_MODEL: [number[], string][] = [
-  [[256,256], "yolov7-tiny_256x256.onnx"],
-  [[320, 320], "yolov7-tiny_320x320.onnx"],
-  [[640, 640], "yolov7-tiny_640x640.onnx"],
+  [[256, 256], 'yolov10n.onnx'],
+  [[256, 256], 'yolov7-tiny_256x256.onnx'],
+  [[320, 320], 'yolov7-tiny_320x320.onnx'],
+  [[640, 640], 'yolov7-tiny_640x640.onnx'],
 ];
 
 const Yolo = (props: any) => {
@@ -29,9 +30,13 @@ const Yolo = (props: any) => {
       setSession(session);
     };
     getSession();
-  }, [modelName]);
+  }, [modelName, modelResolution]);
 
-  const changeModelResolution = () => {
+  const changeModelResolution = (width?: number, height?: number) => {
+    if (width !== undefined && height !== undefined) {
+      setModelResolution([width, height]);
+      return;
+    }
     const index = RES_TO_MODEL.findIndex((item) => item[0] === modelResolution);
     if (index === RES_TO_MODEL.length - 1) {
       setModelResolution(RES_TO_MODEL[0][0]);
@@ -65,17 +70,17 @@ const Yolo = (props: any) => {
       );
     } else {
       // Create a new canvas element with the target dimensions
-      canvas = document.createElement("canvas");
+      canvas = document.createElement('canvas');
       canvas.width = targetWidth;
       canvas.height = targetHeight;
 
       // Draw the source canvas into the target canvas
       canvas
-        .getContext("2d")!
+        .getContext('2d')!
         .drawImage(ctx.canvas, 0, 0, targetWidth, targetHeight);
 
       // Get a new rendering context for the new canvas
-      ctx = canvas.getContext("2d")!;
+      ctx = canvas.getContext('2d')!;
     }
 
     return ctx;
@@ -119,7 +124,7 @@ const Yolo = (props: any) => {
 
     ops.divseq(dataProcessedTensor, 255);
 
-    const tensor = new Tensor("float32", new Float32Array(width * height * 3), [
+    const tensor = new Tensor('float32', new Float32Array(width * height * 3), [
       1,
       3,
       width,
@@ -139,51 +144,16 @@ const Yolo = (props: any) => {
   const postprocess = async (
     tensor: Tensor,
     inferenceTime: number,
-    ctx: CanvasRenderingContext2D
+    ctx: CanvasRenderingContext2D,
+    modelName: string
   ) => {
-    const dx = ctx.canvas.width / modelResolution[0];
-    const dy = ctx.canvas.height / modelResolution[1];
-
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    for (let i = 0; i < tensor.dims[0]; i++) {
-      let [batch_id, x0, y0, x1, y1, cls_id, score] = tensor.data.slice(
-        i * 7,
-        i * 7 + 7
-      );
-
-      // scale to canvas size
-      [x0, x1] = [x0, x1].map((x: any) => x * dx);
-      [y0, y1] = [y0, y1].map((x: any) => x * dy);
-
-      [batch_id, x0, y0, x1, y1, cls_id] = [
-        batch_id,
-        x0,
-        y0,
-        x1,
-        y1,
-        cls_id,
-      ].map((x: any) => round(x));
-
-      [score] = [score].map((x: any) => round(x * 100, 1));
-      const label =
-        yoloClasses[cls_id].toString()[0].toUpperCase() +
-        yoloClasses[cls_id].toString().substring(1) +
-        " " +
-        score.toString() +
-        "%";
-      const color = conf2color(score / 100);
-
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 3;
-      ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
-      ctx.font = "20px Arial";
-      ctx.fillStyle = color;
-      ctx.fillText(label, x0, y0 - 5);
-
-      // fillrect with transparent color
-      ctx.fillStyle = color.replace(")", ", 0.2)").replace("rgb", "rgba");
-      ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+    // Output tensor of yolov7-tiny is [det_num, 7] while yolov10n is [1, all_boxes, 6]
+    // Thus we need to handle them differently
+    if (modelName === 'yolov10n.onnx') {
+      postprocessYolov10(ctx, modelResolution, tensor, conf2color);
+      return;
     }
+    postprocessYolov7(ctx, modelResolution, tensor, conf2color);
   };
 
   return (
@@ -192,12 +162,109 @@ const Yolo = (props: any) => {
       height={props.height}
       preprocess={preprocess}
       postprocess={postprocess}
-      resizeCanvasCtx={resizeCanvasCtx}
+      // resizeCanvasCtx={resizeCanvasCtx}
       session={session}
-      changeModelResolution={changeModelResolution}
+      changeCurrentModelResolution={changeModelResolution}
+      currentModelResolution={modelResolution}
       modelName={modelName}
     />
   );
 };
 
 export default Yolo;
+function postprocessYolov10(
+  ctx: CanvasRenderingContext2D,
+  modelResolution: number[],
+  tensor: Tensor,
+  conf2color: (conf: number) => string
+) {
+  const dx = ctx.canvas.width / modelResolution[0];
+  const dy = ctx.canvas.height / modelResolution[1];
+
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+  let x0, y0, x1, y1, cls_id, score;
+
+  for (let i = 0; i < tensor.dims[1]; i += 6) {
+    [x0, y0, x1, y1, score, cls_id] = tensor.data.slice(i, i + 6);
+    if ((score as any) < 0.25) {
+      break;
+    }
+
+    // scale to canvas size
+    [x0, x1] = [x0, x1].map((x: any) => x * dx);
+    [y0, y1] = [y0, y1].map((x: any) => x * dy);
+
+    [x0, y0, x1, y1, cls_id] = [x0, y0, x1, y1, cls_id].map((x: any) =>
+      round(x)
+    );
+
+    [score] = [score].map((x: any) => round(x * 100, 1));
+    const label =
+      yoloClasses[cls_id].toString()[0].toUpperCase() +
+      yoloClasses[cls_id].toString().substring(1) +
+      ' ' +
+      score.toString() +
+      '%';
+    const color = conf2color(score / 100);
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+    ctx.font = '20px Arial';
+    ctx.fillStyle = color;
+    ctx.fillText(label, x0, y0 - 5);
+
+    // fillrect with transparent color
+    ctx.fillStyle = color.replace(')', ', 0.2)').replace('rgb', 'rgba');
+    ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+  }
+}
+
+function postprocessYolov7(
+  ctx: CanvasRenderingContext2D,
+  modelResolution: number[],
+  tensor: Tensor,
+  conf2color: (conf: number) => string
+) {
+  const dx = ctx.canvas.width / modelResolution[0];
+  const dy = ctx.canvas.height / modelResolution[1];
+
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+  let batch_id, x0, y0, x1, y1, cls_id, score;
+  for (let i = 0; i < tensor.dims[0]; i++) {
+    [batch_id, x0, y0, x1, y1, cls_id, score] = tensor.data.slice(
+      i * 7,
+      i * 7 + 7
+    );
+
+    // scale to canvas size
+    [x0, x1] = [x0, x1].map((x: any) => x * dx);
+    [y0, y1] = [y0, y1].map((x: any) => x * dy);
+
+    [x0, y0, x1, y1, cls_id] = [x0, y0, x1, y1, cls_id].map((x: any) =>
+      round(x)
+    );
+
+    [score] = [score].map((x: any) => round(x * 100, 1));
+    const label =
+      yoloClasses[cls_id].toString()[0].toUpperCase() +
+      yoloClasses[cls_id].toString().substring(1) +
+      ' ' +
+      score.toString() +
+      '%';
+    const color = conf2color(score / 100);
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+    ctx.font = '20px Arial';
+    ctx.fillStyle = color;
+    ctx.fillText(label, x0, y0 - 5);
+
+    // fillrect with transparent color
+    ctx.fillStyle = color.replace(')', ', 0.2)').replace('rgb', 'rgba');
+    ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+  }
+}
