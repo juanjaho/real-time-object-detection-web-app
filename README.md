@@ -58,7 +58,7 @@ yarn dev
 1. Add your custom model to the `/models` directory.
 2. Update the `RES_TO_MODEL` constant in `components/models/Yolo.tsx` to include your model's resolution and path.
 3. Modify the `preprocess` and `postprocess` functions in `components/models/Yolo.tsx` to match the input and output requirements of your model.
-4. If you encounter `protobuff error` while loading your `.onnx` model, your model may not be optimised for `onnxruntime webassembly`. Convert your model to `.ort` or optimised `.onnx` using [onnxruntime](https://onnxruntime.ai/docs/performance/model-optimizations/ort-format-models.html). See [ultralytics_pt_to_onnx.md](./ultralytics_pt_to_onnx.md) for example.
+4. If you encounter `protobuff error` while loading your `.onnx` model, your model may not be optimised for `onnxruntime webassembly`. Convert your model to `.ort` or optimised `.onnx` using [onnxruntime](https://onnxruntime.ai/docs/performance/model-optimizations/ort-format-models.html). See [ultralytics_pt_to_onnx.md](./convert_pt_to_onnx/ultralytics_pt_to_onnx.md) for example.
 
 ### Installation as PWA
 
@@ -108,6 +108,39 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 - Thank you to all the contributors to the open-source libraries used in this project.
 
 - Inspiration for this project was taken from my previous project [AnimeArcaneGAN_Mobile](https://github.com/juanjaho/AnimeArcaneGAN_Mobile)
+
+## Citation for YOLOv12
+
+```
+@article{tian2025yolov12,
+  title={YOLOv12: Attention-Centric Real-Time Object Detectors},
+  author={Tian, Yunjie and Ye, Qixiang and Doermann, David},
+  journal={arXiv preprint arXiv:2502.12524},
+  year={2025}
+}
+
+@software{yolo12,
+  author = {Tian, Yunjie and Ye, Qixiang and Doermann, David},
+  title = {YOLOv12: Attention-Centric Real-Time Object Detectors},
+  year = {2025},
+  url = {https://github.com/sunsmarterjie/yolov12},
+  license = {AGPL-3.0}
+}
+```
+
+## Citation for YOLOv11
+
+```
+@software{yolo11_ultralytics,
+  author = {Glenn Jocher and Jing Qiu},
+  title = {Ultralytics YOLO11},
+  version = {11.0.0},
+  year = {2024},
+  url = {https://github.com/ultralytics/ultralytics},
+  orcid = {0000-0001-5950-6979, 0000-0003-3783-7069},
+  license = {AGPL-3.0}
+}
+```
 
 ## Citation for YOLOv10
 

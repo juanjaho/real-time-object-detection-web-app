@@ -1,11 +1,9 @@
-import { InferenceSession, Tensor } from "onnxruntime-web";
+import { InferenceSession, Tensor } from 'onnxruntime-web';
 
-export async function createModelCpu(
-  url: string
-): Promise<InferenceSession> {
+export async function createModelCpu(url: string): Promise<InferenceSession> {
   return await InferenceSession.create(url, {
-    executionProviders: ["wasm"],
-    graphOptimizationLevel: "all",
+    executionProviders: ['wasm'],
+    graphOptimizationLevel: 'all',
   });
 }
 
@@ -13,7 +11,6 @@ export async function runModel(
   model: InferenceSession,
   preprocessedData: Tensor
 ): Promise<[Tensor, number]> {
-  
   try {
     const feeds: Record<string, Tensor> = {};
     feeds[model.inputNames[0]] = preprocessedData;
